@@ -1,0 +1,2166 @@
+    <script src="./?a=77"></script><!-- API -->
+    <script src="./?a=89"></script><!-- jquery-1.10.2.js -->
+    <script src="./?a=90"></script><!-- jquery-ui-1.10.4.custom.min.js -->
+    <script src="./?a=88"></script><!-- bootstrap.min.js -->
+    <script src="./?a=91"></script><!-- underscore-min.js -->
+    <!-- script src="./?a=92"></script--><!-- angular.min.js -->
+    <script src="./?a=134"></script><!-- angular.min.1.3beta.js -->
+    <script src="./?a=133"></script><!-- angular-animate.js -->
+    <script src="./?a=132"></script><!-- date.js -->
+
+<script>
+var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
+
+assetStatuses = [
+    {"id":"1","name":"Archived"},
+    {"id":"32","name":"Up for Review"},
+    {"id":"2","name":"Under Construction"},
+    {"id":"64","name":"Safe Editing"},
+    {"id":"4","name":"Pending Approval"},
+    {"id":"128","name":"Safe Editing Pending Approval"},
+    {"id":"8","name":"Approved to go Live"},
+    {"id":"256","name":"Safe Editing Approved to go Live"},
+    {"id":"16","name":"Live"}
+];
+
+matrixTypeCodes = [
+    {"prettyName":"Authentication","name":"authentication"},
+    {"prettyName":"Default Authentication","name":"authentication_default"},
+    {"prettyName":"IPB Authentication","name":"authentication_ipb"},
+    {"prettyName":"LDAP Authentication","name":"authentication_ldap"},
+    {"prettyName":"Bodycopy","name":"bodycopy"},
+    {"prettyName":"Simple Edit Layout","name":"layout"},
+    {"prettyName":"Multiple Page Page","name":"page_multiple_page_page"},
+    {"prettyName":"Paint Layout Bodycopy","name":"paint_layout_bodycopy"},
+    {"prettyName":"Bodycopy Container","name":"bodycopy_container"},
+    {"prettyName":"Bodycopy Div","name":"bodycopy_div"},
+    {"prettyName":"Bodycopy Table","name":"bodycopy_table"},
+    {"prettyName":"Bulkmail Post Office","name":"bulkmail_post_office"},
+    {"prettyName":"Bulkmail Job","name":"bulkmail_job"},
+    {"prettyName":"Bulkmail Manager","name":"bulkmail_manager"},
+    {"prettyName":"Bulkmail User","name":"bulkmail_user"},
+    {"prettyName":"Cache Manager","name":"cache_manager"},
+    {"prettyName":"Abstract Cache Storage Mechanism","name":"cache_storage"},
+    {"prettyName":"Default Cache Storage","name":"cache_storage_default"},
+    {"prettyName":"Memcache Cache Storage","name":"cache_storage_memcache"},
+    {"prettyName":"Redis Cache Storage","name":"cache_storage_redis"},
+    {"prettyName":"Abstract Calendar Event","name":"calendar_event"},
+    {"prettyName":"Recurring Event Cancellation","name":"calendar_event_cancellation"},
+    {"prettyName":"Recurring Event Modification","name":"calendar_event_modification"},
+    {"prettyName":"Recurring Calendar Event","name":"calendar_event_recurring"},
+    {"prettyName":"Single Calendar Event","name":"calendar_event_single"},
+    {"prettyName":"Multi-Date Calendar Event","name":"calendar_event_multi_date"},
+    {"prettyName":"Checkout Action","name":"checkout_action"},
+    {"prettyName":"Call REST Resource","name":"checkout_action_call_rest_resource"},
+    {"prettyName":"Save XML","name":"checkout_action_save_xml"},
+    {"prettyName":"CMIS Bridge","name":"cmis_bridge"},
+    {"prettyName":"Condition","name":"condition"},
+    {"prettyName":"Admin Access Condition","name":"condition_admin_access"},
+    {"prettyName":"Asset Status Condition","name":"condition_asset_status"},
+    {"prettyName":"Asset Type Condition","name":"condition_asset_type"},
+    {"prettyName":"Form Posted Condition","name":"condition_form_posted"},
+    {"prettyName":"Has Children Condition","name":"condition_has_children"},
+    {"prettyName":"In User Group Condition","name":"condition_in_user_group"},
+    {"prettyName":"Keyword Regexp Condition","name":"condition_keyword_regexp"},
+    {"prettyName":"Logged In Condition","name":"condition_logged_in"},
+    {"prettyName":"Logical Condition","name":"condition_logical"},
+    {"prettyName":"Server Variable Condition","name":"condition_server_variable"},
+    {"prettyName":"Simple Edit Mode Condition","name":"condition_simple_edit_mode"},
+    {"prettyName":"User Agent Condition","name":"condition_user_agent"},
+    {"prettyName":"User Frequency Condition","name":"condition_user_frequency"},
+    {"prettyName":"User IP Condition","name":"condition_user_ip"},
+    {"prettyName":"User IPv6 Condition","name":"condition_user_ipv6"},
+    {"prettyName":"User Type Condition","name":"condition_user_type"},
+    {"prettyName":"Write Access Condition","name":"condition_write_access"},
+    {"prettyName":"Content Type","name":"content_type"},
+    {"prettyName":"Code Content Type","name":"content_type_code"},
+    {"prettyName":"Image Content Type","name":"content_type_image"},
+    {"prettyName":"Markdown Content Type","name":"content_type_markdown"},
+    {"prettyName":"Nest Content Content Type","name":"content_type_nest_content"},
+    {"prettyName":"Raw HTML Content Type","name":"content_type_raw_html"},
+    {"prettyName":"Snippet Content Type","name":"content_type_snippet"},
+    {"prettyName":"Structure Tree Content Type","name":"content_type_structure_tree"},
+    {"prettyName":"WYSIWYG Content Type","name":"content_type_wysiwyg"},
+    {"prettyName":"Cron Job","name":"cron_job"},
+    {"prettyName":"Attempt Safe Trash Cron Job","name":"cron_job_attempt_safe_trash"},
+    {"prettyName":"Clear Matrix Cache Cron Job","name":"cron_job_clear_matrix_cache"},
+    {"prettyName":"Escalate Safe Trash Cron Job","name":"cron_job_escalate_safe_trash"},
+    {"prettyName":"Expired Matrix Cache Cron Job","name":"cron_job_expired_matrix_cache"},
+    {"prettyName":"Expired Matrix Locks Cron Job","name":"cron_job_expired_matrix_locks"},
+    {"prettyName":"Expired WorkFlow Cron Job","name":"cron_job_expired_workflow"},
+    {"prettyName":"Funnelback Log Rotation Cron Job","name":"cron_job_funnelback_log_rotation"},
+    {"prettyName":"Future Asset Lineage Cron Job","name":"cron_job_future_lineage"},
+    {"prettyName":"Future Asset Permission Cron Job","name":"cron_job_future_permission"},
+    {"prettyName":"Future Asset Status Cron Job","name":"cron_job_future_status"},
+    {"prettyName":"Generate Log Reports Cron Job","name":"cron_job_generate_log_reports"},
+    {"prettyName":"Manage Incomplete Submissions Cron Job","name":"cron_job_manage_incomplete_submissions"},
+    {"prettyName":"Manage Pending Accounts Cron Job","name":"cron_job_manage_pending_accounts"},
+    {"prettyName":"Cron Job Metadata Triggers","name":"cron_job_metadata_triggers"},
+    {"prettyName":"Queue Scheduled Bulkmail Job","name":"cron_job_queue_scheduled_job"},
+    {"prettyName":"Refresh Cache Cron Job","name":"cron_job_refresh_cache"},
+    {"prettyName":"Regenerate Report Cron Job","name":"cron_job_regenerate_report"},
+    {"prettyName":"Remove SOAP Response Files Cron Job","name":"cron_job_remove_soap_response_files"},
+    {"prettyName":"Send Submission Log Cron Job","name":"cron_job_send_submission_log"},
+    {"prettyName":"Purge Squid Cache Cron Job","name":"cron_job_squid_cache_purge"},
+    {"prettyName":"Sync CMIS Bridges Cron Job","name":"cron_job_sync_cmis_bridges"},
+    {"prettyName":"Sync Squiz Suite Products Cron Job","name":"cron_job_sync_suite_products"},
+    {"prettyName":"Update Sharepoint Record Cron Job","name":"cron_job_update_sharepoint_record"},
+    {"prettyName":"Update TRIM Record Cron Job","name":"cron_job_update_trim_record"},
+    {"prettyName":"Cron Manager","name":"cron_manager"},
+    {"prettyName":"Data Record","name":"data_record"},
+    {"prettyName":"Data Source","name":"data_source"},
+    {"prettyName":"CSV Data Source","name":"data_source_csv"},
+    {"prettyName":"DB Data Source","name":"data_source_db"},
+    {"prettyName":"iCal Data Source","name":"data_source_ical"},
+    {"prettyName":"JSON Data Source","name":"data_source_json"},
+    {"prettyName":"LDAP Data Source","name":"data_source_ldap"},
+    {"prettyName":"RSS Data Source","name":"data_source_rss"},
+    {"prettyName":"SOAP Data Source","name":"data_source_soap"},
+    {"prettyName":"XML Data Source","name":"data_source_xml"},
+    {"prettyName":"Weather Company Feed","name":"weatherco_feed"},
+    {"prettyName":"Sharepoint Saved Search","name":"sharepoint_saved_search"},
+    {"prettyName":"TRIM Saved Search","name":"trim_saved_search"},
+    {"prettyName":"Data Source Record Set","name":"data_source_record_set"},
+    {"prettyName":"DB Connector","name":"db_connector"},
+    {"prettyName":"Decision Tree Question","name":"decision_tree_question"},
+    {"prettyName":"Decision Tree Question - Numeric","name":"decision_tree_question_type_numeric"},
+    {"prettyName":"Decision Tree Question - Select","name":"decision_tree_question_type_select"},
+    {"prettyName":"Design Area","name":"design_area"},
+    {"prettyName":"Design","name":"design"},
+    {"prettyName":"CSS Design File","name":"design_css"},
+    {"prettyName":"CSS File Customisation","name":"design_css_customisation"},
+    {"prettyName":"Design Customisation","name":"design_customisation"},
+    {"prettyName":"EES Login Design","name":"ees_login_design"},
+    {"prettyName":"Login Design","name":"login_design"},
+    {"prettyName":"Password Change Design","name":"password_change_design"},
+    {"prettyName":"Access History Design Area","name":"design_area_access_history"},
+    {"prettyName":"Asset Lineage Design Area","name":"design_area_asset_lineage"},
+    {"prettyName":"Body Design Area","name":"design_area_body"},
+    {"prettyName":"Colourise Image Design Area","name":"design_area_colourise_image"},
+    {"prettyName":"Constant Button Design Area","name":"design_area_constant_button"},
+    {"prettyName":"Custom Image Design Area","name":"design_area_custom_image"},
+    {"prettyName":"DateTime Design Area","name":"design_area_datetime"},
+    {"prettyName":"Declared Vars Design Area","name":"design_area_declared_vars"},
+    {"prettyName":"Cart Design Area","name":"design_area_ecommerce_cart"},
+    {"prettyName":"Exit Design Area","name":"design_area_exit"},
+    {"prettyName":"Head Design Area","name":"design_area_head"},
+    {"prettyName":"Javascript Calendar Navigator","name":"design_area_js_calendar_navigator"},
+    {"prettyName":"Linked CSS Design Area","name":"design_area_linked_css"},
+    {"prettyName":"Login Form Design Area","name":"design_area_login_form"},
+    {"prettyName":"Menu Type Design Area","name":"design_area_menu_type"},
+    {"prettyName":"Normal Menu Design Area","name":"design_area_menu_normal"},
+    {"prettyName":"Recursive Menu Design Area","name":"design_area_menu_recursive"},
+    {"prettyName":"Recursive Stalks Menu Design Area","name":"design_area_menu_stalks"},
+    {"prettyName":"Metadata Design Area","name":"design_area_metadata"},
+    {"prettyName":"Nest Content Design Area","name":"design_area_nest_content"},
+    {"prettyName":"Password Change Form Design Area","name":"design_area_password_change_form"},
+    {"prettyName":"Request Vars Design Area","name":"design_area_request_vars"},
+    {"prettyName":"Searchbox design area","name":"design_area_searchbox"},
+    {"prettyName":"Show If Design Area","name":"design_area_show_if"},
+    {"prettyName":"Ecommerce Delivery Method","name":"ecommerce_delivery_method"},
+    {"prettyName":"Ecommerce Default Delivery Method","name":"default_delivery_method"},
+    {"prettyName":"Ecommerce Order","name":"ecommerce_order"},
+    {"prettyName":"File","name":"file"},
+    {"prettyName":"CSS File","name":"css_file"},
+    {"prettyName":"MS Excel Document","name":"excel_doc"},
+    {"prettyName":"File Folder","name":"file_folder"},
+    {"prettyName":"CSS File Folder","name":"css_file_folder"},
+    {"prettyName":"JS File Folder","name":"js_file_folder"},
+    {"prettyName":"FLV File","name":"flv_file"},
+    {"prettyName":"Image","name":"image"},
+    {"prettyName":"Data Source Graph","name":"data_source_graph"},
+    {"prettyName":"Thumbnail","name":"thumbnail"},
+    {"prettyName":"JS File","name":"js_file"},
+    {"prettyName":"MP3 File","name":"mp3_file"},
+    {"prettyName":"PDF File","name":"pdf_file"},
+    {"prettyName":"MS PowerPoint Document","name":"powerpoint_doc"},
+    {"prettyName":"RTF File","name":"rtf_file"},
+    {"prettyName":"Text File","name":"text_file"},
+    {"prettyName":"Video File","name":"video_file"},
+    {"prettyName":"MS Word Document","name":"word_doc"},
+    {"prettyName":"XML File","name":"xml_file"},
+    {"prettyName":"XSL File","name":"xsl_file"},
+    {"prettyName":"File Bridge","name":"file_bridge"},
+    {"prettyName":"Folder","name":"folder"},
+    {"prettyName":"Authentication Folder","name":"authentication_folder"},
+    {"prettyName":"System Designs Folder","name":"designs_folder"},
+    {"prettyName":"Metadata Schema","name":"metadata_schema"},
+    {"prettyName":"Metadata Section","name":"metadata_section"},
+    {"prettyName":"Online Quiz Question Group","name":"online_quiz_question_group"},
+    {"prettyName":"Root Folder","name":"root_folder"},
+    {"prettyName":"Site","name":"site"},
+    {"prettyName":"Web Folder","name":"web_folder"},
+    {"prettyName":"Designs Folder","name":"web_folder_designs"},
+    {"prettyName":"Media Folder","name":"web_folder_media"},
+    {"prettyName":"Users Folder","name":"web_folder_users"},
+    {"prettyName":"Web Services Folder","name":"web_folder_web_services"},
+    {"prettyName":"Site Network","name":"site_network"},
+    {"prettyName":"System Management Folder","name":"system_management_folder"},
+    {"prettyName":"Trash Folder","name":"trash_folder"},
+    {"prettyName":"Trigger Folder","name":"trigger_folder"},
+    {"prettyName":"User Group","name":"user_group"},
+    {"prettyName":"IPB User Group","name":"ipb_user_group"},
+    {"prettyName":"LDAP User Group","name":"ldap_user_group"},
+    {"prettyName":"Role","name":"role"},
+    {"prettyName":"System Administrators","name":"system_user_group"},
+    {"prettyName":"Workflow Schema","name":"workflow_schema"},
+    {"prettyName":"Workflow Step","name":"workflow_step"},
+    {"prettyName":"Workspace","name":"workspace"},
+    {"prettyName":"Form","name":"form"},
+    {"prettyName":"Form","name":"form_email"},
+    {"prettyName":"Ecommerce Form","name":"form_ecommerce"},
+    {"prettyName":"Form Action","name":"form_action"},
+    {"prettyName":"Call REST Resource","name":"form_action_call_rest_resource"},
+    {"prettyName":"Create Sharepoint List Item","name":"form_action_create_sharepoint_list_item"},
+    {"prettyName":"Run Database Query","name":"form_action_db_query"},
+    {"prettyName":"Save as XML","name":"form_action_save_xml"},
+    {"prettyName":"Send Email Form Action","name":"form_action_send_email"},
+    {"prettyName":"Set Session Var Form Action","name":"form_action_set_session_var"},
+    {"prettyName":"Make SOAP Call","name":"form_action_soap_call"},
+    {"prettyName":"Submit TRIM Record","name":"form_action_trim_submit"},
+    {"prettyName":"Upload YouTube Video","name":"form_action_upload_youtube_video"},
+    {"prettyName":"Form Question","name":"form_question"},
+    {"prettyName":"Form Question - Date/Time","name":"form_question_type_datetime"},
+    {"prettyName":"Form Question - File Upload","name":"form_question_type_file_upload"},
+    {"prettyName":"Form Question - Password","name":"form_question_type_password"},
+    {"prettyName":"Form Question - Select","name":"form_question_type_select"},
+    {"prettyName":"Form Question - Country Selection","name":"form_question_type_country"},
+    {"prettyName":"Form Question - Text","name":"form_question_type_text"},
+    {"prettyName":"Form Question - Email Address","name":"form_question_type_email_address"},
+    {"prettyName":"Form Question - Numeric Field","name":"form_question_type_numeric"},
+    {"prettyName":"Form Question - Tickbox List","name":"form_question_type_tickbox_list"},
+    {"prettyName":"Form Question - Option List","name":"form_question_type_option_list"},
+    {"prettyName":"Form Question - Tickbox Table","name":"form_question_type_tickbox_table"},
+    {"prettyName":"Form Question Rule","name":"form_question_rule"},
+    {"prettyName":"Form Question Rule - Begins With","name":"form_question_rule_type_begins_with"},
+    {"prettyName":"Form Question Rule - Value Comparison","name":"form_question_rule_type_comparison"},
+    {"prettyName":"Form Question Rule - Contains","name":"form_question_rule_type_contain"},
+    {"prettyName":"Form Question Rule - Valid Email Address","name":"form_question_rule_type_email"},
+    {"prettyName":"Form Question Rule - Ends With","name":"form_question_rule_type_ends_with"},
+    {"prettyName":"Form Question Rule - File Size","name":"form_question_rule_type_file_size"},
+    {"prettyName":"Form Question Rule - File Type","name":"form_question_rule_type_file_type"},
+    {"prettyName":"Form Question Rule - File Virus Check","name":"form_question_rule_type_file_virus_check"},
+    {"prettyName":"Form Question Rule - Found In","name":"form_question_rule_type_found_in"},
+    {"prettyName":"Form Question Rule - Force Integer Value","name":"form_question_rule_type_integer"},
+    {"prettyName":"Form Question Rule - Length Comparison","name":"form_question_rule_type_length"},
+    {"prettyName":"Form Question Rule - Numeric Value","name":"form_question_rule_type_numeric"},
+    {"prettyName":"Form Question Rule - Regular Expression","name":"form_question_rule_type_regexp"},
+    {"prettyName":"Form Question Rule - Selection Limit","name":"form_question_rule_type_select_limit"},
+    {"prettyName":"Form Question Rule - Selection","name":"form_question_rule_type_selection"},
+    {"prettyName":"Form Question Rule - Word Count Comparison","name":"form_question_rule_type_word_count"},
+    {"prettyName":"Form Section","name":"form_section"},
+    {"prettyName":"Form Section Action","name":"form_section_action"},
+    {"prettyName":"Make SOAP Call","name":"form_section_action_soap_call"},
+    {"prettyName":"Form Submission","name":"form_submission"},
+    {"prettyName":"Order","name":"order"},
+    {"prettyName":"Funnelback Manager","name":"funnelback_manager"},
+    {"prettyName":"Google Map Location","name":"google_map_location"},
+    {"prettyName":"Image Variety","name":"image_variety"},
+    {"prettyName":"Import Tool Converter","name":"import_tool_converter"},
+    {"prettyName":"Word Import Tool Converter","name":"import_tool_converter_word"},
+    {"prettyName":"Import Tools Manager","name":"import_tools_manager"},
+    {"prettyName":"Inbox","name":"inbox"},
+    {"prettyName":"IPB Bridge","name":"ipb_bridge"},
+    {"prettyName":"IPB Forum","name":"ipb_forum"},
+    {"prettyName":"IPB Root Forum","name":"ipb_root_forum"},
+    {"prettyName":"IPB Topic","name":"ipb_topic"},
+    {"prettyName":"IPB Post","name":"ipb_post"},
+    {"prettyName":"IPB Poll","name":"ipb_poll"},
+    {"prettyName":"Layout Manager","name":"layout_manager"},
+    {"prettyName":"LDAP Bridge","name":"ldap_bridge"},
+    {"prettyName":"Link","name":"link"},
+    {"prettyName":"Abstract Locking Method","name":"locking_method"},
+    {"prettyName":"Default Locking Method","name":"locking_method_default"},
+    {"prettyName":"Default Locking Method","name":"locking_method_memcache"},
+    {"prettyName":"Log Manager","name":"log_manager"},
+    {"prettyName":"Lookup Value","name":"lookup_value"},
+    {"prettyName":"Paint Layout Lookup Value","name":"paint_layout_lookup_value"},
+    {"prettyName":"Metadata Field","name":"metadata_field"},
+    {"prettyName":"Metadata Date Field","name":"metadata_field_date"},
+    {"prettyName":"Metadata Hierarchy Field","name":"metadata_field_hierarchy"},
+    {"prettyName":"Metadata Multiple Text Field","name":"metadata_field_multiple_text"},
+    {"prettyName":"Metadata Related Asset Field","name":"metadata_field_related_asset"},
+    {"prettyName":"Metadata Selection Field","name":"metadata_field_select"},
+    {"prettyName":"Metadata Text Field","name":"metadata_field_text"},
+    {"prettyName":"Metadata Thesaurus Field","name":"metadata_field_thesaurus"},
+    {"prettyName":"Metadata WYSIWYG Field","name":"metadata_field_wysiwyg"},
+    {"prettyName":"Online Quiz Question","name":"online_quiz_question"},
+    {"prettyName":"Online Quiz Multiple-Choice Question","name":"online_quiz_question_multichoice"},
+    {"prettyName":"Online Quiz Submission","name":"online_quiz_submission"},
+    {"prettyName":"Order Line","name":"order_line"},
+    {"prettyName":"Page","name":"page"},
+    {"prettyName":"Comment","name":"comment"},
+    {"prettyName":"Donation","name":"donation"},
+    {"prettyName":"Checkout Page","name":"ecommerce_checkout"},
+    {"prettyName":"Javascript API","name":"js_api"},
+    {"prettyName":"Listing Engine Asset","name":"listing_engine"},
+    {"prettyName":"Cart","name":"ecommerce_cart"},
+    {"prettyName":"Funnelback Search Page","name":"funnelback_search_page"},
+    {"prettyName":"Asset Listing Page","name":"page_asset_listing"},
+    {"prettyName":"Google Map","name":"google_map"},
+    {"prettyName":"Link Manager Page","name":"page_link_manager"},
+    {"prettyName":"Online Quiz","name":"page_online_quiz"},
+    {"prettyName":"Related Asset Listing Page","name":"page_related_asset_listing"},
+    {"prettyName":"Tag Listing Page","name":"page_tag_listing"},
+    {"prettyName":"Hit Count Listing Page","name":"page_hit_count_listing"},
+    {"prettyName":"Whats New","name":"page_whats_new"},
+    {"prettyName":"Search List","name":"search_list"},
+    {"prettyName":"Search Page","name":"search_page"},
+    {"prettyName":"Calendar Events Search Page","name":"page_calendar_events_search"},
+    {"prettyName":"News Item","name":"news_item"},
+    {"prettyName":"Asset Builder Page","name":"page_asset_builder"},
+    {"prettyName":"Account Manager Page","name":"page_account_manager"},
+    {"prettyName":"SAML Account Manager","name":"saml_account_manager"},
+    {"prettyName":"Calendar Page","name":"page_calendar"},
+    {"prettyName":"Rolling Calendar Page","name":"page_calendar_rolling"},
+    {"prettyName":"Restricted-Period Calendar Page","name":"page_calendar_restricted"},
+    {"prettyName":"Custom Form","name":"page_custom_form"},
+    {"prettyName":"Ecommerce Form Page","name":"page_custom_form_ecommerce"},
+    {"prettyName":"Decision Tree","name":"page_decision_tree"},
+    {"prettyName":"Multiple Page","name":"page_multiple_page"},
+    {"prettyName":"Password Reset Page","name":"page_password_reset"},
+    {"prettyName":"Online Poll","name":"page_poll"},
+    {"prettyName":"Redirect Page","name":"page_redirect"},
+    {"prettyName":"Remote Content","name":"page_remote_content"},
+    {"prettyName":"REST Resource","name":"page_rest_resource"},
+    {"prettyName":"Funnelback REST Search Page","name":"funnelback_rest_search_page"},
+    {"prettyName":"REST Resource JavaScript","name":"page_rest_resource_js"},
+    {"prettyName":"REST Resource OAuth Session","name":"page_rest_resource_oauth_session"},
+    {"prettyName":"REST Resource OAuth 2 Legged","name":"page_rest_resource_oauth_two_legged"},
+    {"prettyName":"RSS Feed","name":"page_rss_feed"},
+    {"prettyName":"Site Map","name":"page_site_map"},
+    {"prettyName":"Standard Page","name":"page_standard"},
+    {"prettyName":"Paint Layout","name":"paint_layout_page"},
+    {"prettyName":"Upcoming Events List","name":"page_upcoming_events_list"},
+    {"prettyName":"User Group Manager Page","name":"page_user_group_manager"},
+    {"prettyName":"Bulkmail Subscribe Page","name":"bulkmail_subscribe_page"},
+    {"prettyName":"Payment Gateway","name":"payment_gateway"},
+    {"prettyName":"Datacash Payment Gateway","name":"payment_gateway_datacash"},
+    {"prettyName":"DPS Payment Gateway","name":"payment_gateway_dps"},
+    {"prettyName":"SecurePay eSec Payment Gateway","name":"payment_gateway_esec"},
+    {"prettyName":"PayPal Payflow Pro Payment Gateway","name":"payment_gateway_payflow"},
+    {"prettyName":"PayPal Express Checkout Payment Gateway","name":"payment_gateway_paypal_express"},
+    {"prettyName":"SagePay Payment Gateway","name":"payment_gateway_sagepay"},
+    {"prettyName":"SecurePay Direct Post Payment Gateway","name":"payment_gateway_securepay"},
+    {"prettyName":"UTransact Payment Gateway","name":"payment_gateway_utransact"},
+    {"prettyName":"Paypal IPN Receiver","name":"paypal_ipn_receiver"},
+    {"prettyName":"Paypal Payment Button","name":"paypal_payment_button"},
+    {"prettyName":"Product","name":"product"},
+    {"prettyName":"Report","name":"report"},
+    {"prettyName":"Funnelback Search Log Report","name":"funnelback_search_log_report"},
+    {"prettyName":"Log Report","name":"log_report"},
+    {"prettyName":"Search Log Report","name":"search_log_report"},
+    {"prettyName":"Asset Counter Report","name":"report_asset_counter"},
+    {"prettyName":"Asset Statuses Report","name":"report_asset_statuses"},
+    {"prettyName":"Incomplete Metadata Report","name":"report_incomplete_metadata"},
+    {"prettyName":"Links Report","name":"report_links"},
+    {"prettyName":"Safe Trash Report","name":"report_safe_trash"},
+    {"prettyName":"Structured Asset Report","name":"structured_asset_info"},
+    {"prettyName":"Soap Server","name":"soap_server"},
+    {"prettyName":"Squiz Suite Manager","name":"suite_manager"},
+    {"prettyName":"Paypal Business Account","name":"paypal_business_account"},
+    {"prettyName":"Paypal Configuration","name":"paypal_configuration"},
+    {"prettyName":"Paypal Order","name":"paypal_order"},
+    {"prettyName":"Physical File","name":"physical_file"},
+    {"prettyName":"Physical Folder","name":"physical_folder"},
+    {"prettyName":"Poll Question","name":"poll_question"},
+    {"prettyName":"Promotional Code","name":"promotional_code"},
+    {"prettyName":"Promotional Condition","name":"promotional_condition"},
+    {"prettyName":"Promotional Condition Compare Value","name":"promotional_condition_compare_value"},
+    {"prettyName":"Promotional Rule","name":"promotional_rule"},
+    {"prettyName":"Free Shipping Promotional Rule","name":"promotional_rule_type_free_shipping"},
+    {"prettyName":"Quantity Promotional Rule","name":"promotional_rule_type_quantity"},
+    {"prettyName":"Remap Manager","name":"remap_manager"},
+    {"prettyName":"REST Manager","name":"rest_manager"},
+    {"prettyName":"SAML2 Assertion Consumer Service","name":"saml2_acs"},
+    {"prettyName":"SAML2 Single Logout Service","name":"saml2_sls"},
+    {"prettyName":"Search Folder","name":"search_folder"},
+    {"prettyName":"Search Manager","name":"search_manager"},
+    {"prettyName":"Abstract Session Handler","name":"session_handler"},
+    {"prettyName":"Default Session Handler","name":"session_handler_default"},
+    {"prettyName":"Memcache Session Handler","name":"session_handler_memcache"},
+    {"prettyName":"Sharepoint Connector","name":"sharepoint_connector"},
+    {"prettyName":"Simple Form","name":"simple_form"},
+    {"prettyName":"Simple Report","name":"simple_report"},
+    {"prettyName":"Most Used Asset Types Report","name":"report_most_used_asset_types"},
+    {"prettyName":"Rollback Report","name":"report_rollback"},
+    {"prettyName":"Total Assets Report","name":"report_total_assets"},
+    {"prettyName":"Internal Messages Report","name":"report_total_internal_messages"},
+    {"prettyName":"Trash Age Report","name":"report_trash_age"},
+    {"prettyName":"Triggers Report","name":"report_triggers"},
+    {"prettyName":"SOAP Server API","name":"soap_api"},
+    {"prettyName":"SOAP API Asset Service","name":"soap_api_asset_service"},
+    {"prettyName":"SOAP API Design Lookup Service","name":"soap_api_design_lookup_service"},
+    {"prettyName":"SOAP API File Retrieval Service","name":"soap_api_file_retrieval_service"},
+    {"prettyName":"SOAP API Link Service","name":"soap_api_link_service"},
+    {"prettyName":"SOAP API Metadata Service","name":"soap_api_metadata_service"},
+    {"prettyName":"SOAP API Permission And Role Service","name":"soap_api_permission_role_service"},
+    {"prettyName":"SOAP API Search Service","name":"soap_api_search_service"},
+    {"prettyName":"SOAP API System Service","name":"soap_api_system_service"},
+    {"prettyName":"SOAP API Workflow Service","name":"soap_api_workflow_service"},
+    {"prettyName":"Base System","name":"squiz_suite_system"},
+    {"prettyName":"Search System","name":"squiz_suite_system_search"},
+    {"prettyName":"Squiz Suite System","name":"squiz_suite_system_suite"},
+    {"prettyName":"Tag Manager","name":"tag_manager"},
+    {"prettyName":"Thesaurus","name":"thesaurus"},
+    {"prettyName":"Thesaurus Term","name":"thesaurus_term"},
+    {"prettyName":"Tools","name":"tool"},
+    {"prettyName":"Asset Sorting Tool","name":"tool_asset_sorter"},
+    {"prettyName":"Bulk File Import Tool","name":"tool_bulk_file_import"},
+    {"prettyName":"Change Thesaurus Term","name":"tool_change_thesaurus_term"},
+    {"prettyName":"Clear Matrix Cache","name":"tool_clear_matrix_cache"},
+    {"prettyName":"Clear Squid Cache","name":"tool_clear_squid_cache"},
+    {"prettyName":"Delete Bulkmail Users","name":"tool_delete_bmail_users"},
+    {"prettyName":"Export Assets to XML Tool","name":"tool_export_assets_to_xml"},
+    {"prettyName":"Export Files","name":"tool_export_files"},
+    {"prettyName":"Export Online Quiz to XML Tool","name":"tool_export_online_quiz_to_xml"},
+    {"prettyName":"Import Assets from XML Tool","name":"tool_import_assets_from_xml"},
+    {"prettyName":"Import Bulkmail Users","name":"tool_import_bmail_user"},
+    {"prettyName":"Import File Tool","name":"tool_import_file"},
+    {"prettyName":"Mass Clone Tool","name":"tool_mass_clone"},
+    {"prettyName":"Re-Indexing Tool","name":"tool_reindex"},
+    {"prettyName":"Rollback Management","name":"tool_rollback_management"},
+    {"prettyName":"Global Search and Replace","name":"tool_search_replace"},
+    {"prettyName":"Structured File Import Tool","name":"tool_structured_file_import"},
+    {"prettyName":"Trigger","name":"trigger"},
+    {"prettyName":"Trigger Action","name":"trigger_action"},
+    {"prettyName":"Add Remap","name":"trigger_action_add_assetid_remap"},
+    {"prettyName":"Add URL","name":"trigger_action_add_url"},
+    {"prettyName":"Add Web Path","name":"trigger_action_add_web_path"},
+    {"prettyName":"Calculate Average Comment Rating","name":"trigger_action_calculate_average_comment_rating"},
+    {"prettyName":"Call REST Resource","name":"trigger_action_call_rest_resource"},
+    {"prettyName":"Clear Matrix Cache","name":"trigger_action_clear_cache"},
+    {"prettyName":"Set Cache Expiry","name":"trigger_action_set_cache_expiry"},
+    {"prettyName":"Clear Session Var","name":"trigger_action_clear_session_var"},
+    {"prettyName":"Create Asset","name":"trigger_action_create_asset"},
+    {"prettyName":"Create Clone and Link to Asset","name":"trigger_action_create_clone"},
+    {"prettyName":"Create Design Customisation","name":"trigger_action_create_design_customisation"},
+    {"prettyName":"Create File Asset","name":"trigger_action_create_file_asset"},
+    {"prettyName":"Create Image Variety","name":"trigger_action_create_image_variety"},
+    {"prettyName":"Create Link","name":"trigger_action_create_link"},
+    {"prettyName":"Decrement Hit Count","name":"trigger_action_decrement_hit_count"},
+    {"prettyName":"Delete Bulkmail User","name":"trigger_action_delete_bmail_user"},
+    {"prettyName":"Delete Future Lineage","name":"trigger_action_delete_future_lineage"},
+    {"prettyName":"Delete Future Permission","name":"trigger_action_delete_future_permission"},
+    {"prettyName":"Delete Future Status","name":"trigger_action_delete_future_status"},
+    {"prettyName":"Delete Image Variety","name":"trigger_action_delete_image_variety"},
+    {"prettyName":"Execute Database Query","name":"trigger_action_execute_database_query"},
+    {"prettyName":"Fail","name":"trigger_action_fail"},
+    {"prettyName":"Increment Hit Count","name":"trigger_action_increment_hit_count"},
+    {"prettyName":"Increment Version Number","name":"trigger_action_increment_version"},
+    {"prettyName":"Issue Counter Value","name":"trigger_action_issue_counter_value"},
+    {"prettyName":"Join User Group for Session","name":"trigger_action_join_user_group_for_session"},
+    {"prettyName":"Leave User Group for Session","name":"trigger_action_leave_user_group_for_session"},
+    {"prettyName":"Log in Invision Power Board","name":"trigger_action_login_ipb"},
+    {"prettyName":"Log out Invision Power Board","name":"trigger_action_logout_ipb"},
+    {"prettyName":"Make SOAP Call","name":"trigger_action_make_soap_call"},
+    {"prettyName":"Clear Squid Cache","name":"trigger_action_purge_squid_cache"},
+    {"prettyName":"Redirect to URL","name":"trigger_action_redirect"},
+    {"prettyName":"Release Lock","name":"trigger_action_release_lock"},
+    {"prettyName":"Reload User","name":"trigger_action_reload_user"},
+    {"prettyName":"Remove Future Lineage Cron Job","name":"trigger_action_remove_future_lineage_cron"},
+    {"prettyName":"Remove Links","name":"trigger_action_remove_links"},
+    {"prettyName":"Remove Metadata Schema","name":"trigger_action_remove_metadata_schema"},
+    {"prettyName":"Remove Asset Remaps","name":"trigger_action_remove_remaps"},
+    {"prettyName":"Remove Web Path","name":"trigger_action_remove_web_path"},
+    {"prettyName":"Remove Workflow Schema","name":"trigger_action_remove_workflow_schema"},
+    {"prettyName":"Replace File Asset","name":"trigger_action_replace_file_asset"},
+    {"prettyName":"Reset Hit Count","name":"trigger_action_reset_hit_count"},
+    {"prettyName":"Schedule Bulkmail Job","name":"trigger_action_schedule_bulkmail_job"},
+    {"prettyName":"Send Email Trigger Action","name":"trigger_action_send_email"},
+    {"prettyName":"Set Attribute Value","name":"trigger_action_set_attribute_value"},
+    {"prettyName":"Set Cookie","name":"trigger_action_set_cookie"},
+    {"prettyName":"Set Design","name":"trigger_action_set_design"},
+    {"prettyName":"Set Design Associated Files","name":"trigger_action_set_design_associated_files"},
+    {"prettyName":"Set Design Parse File","name":"trigger_action_set_design_parse_file"},
+    {"prettyName":"Set Force Secure","name":"trigger_action_set_force_secure"},
+    {"prettyName":"Set Future Lineage","name":"trigger_action_set_future_lineage"},
+    {"prettyName":"Set Future Permission","name":"trigger_action_set_future_permission"},
+    {"prettyName":"Set Future Status","name":"trigger_action_set_future_status"},
+    {"prettyName":"Set Index Page for site","name":"trigger_action_set_index_page"},
+    {"prettyName":"Set Metadata Field Date","name":"trigger_action_set_metadata_field_date"},
+    {"prettyName":"Set Metadata Schema","name":"trigger_action_set_metadata_schema"},
+    {"prettyName":"Set Metadata Value","name":"trigger_action_set_metadata_value"},
+    {"prettyName":"Set Paint Layout","name":"trigger_action_set_paint_layout"},
+    {"prettyName":"Set Permission","name":"trigger_action_set_permission"},
+    {"prettyName":"Set Role","name":"trigger_action_set_role"},
+    {"prettyName":"Set Session Var Trigger Action","name":"trigger_action_set_session_var"},
+    {"prettyName":"Set Site Special Page","name":"trigger_action_set_site_special_page"},
+    {"prettyName":"Set Standard Asset Date","name":"trigger_action_set_standard_asset_date"},
+    {"prettyName":"Set Status","name":"trigger_action_set_status"},
+    {"prettyName":"Set Tag","name":"trigger_action_set_tag"},
+    {"prettyName":"Set Thesaurus Term from XML","name":"trigger_action_set_thesaurus_terms"},
+    {"prettyName":"Set Thumbnail","name":"trigger_action_set_thumbnail"},
+    {"prettyName":"Set Workflow Schema","name":"trigger_action_set_workflow_schema"},
+    {"prettyName":"Update Link","name":"trigger_action_update_link"},
+    {"prettyName":"Update Twitter Status","name":"trigger_action_update_twitter_status"},
+    {"prettyName":"Urban Airship Push Notification","name":"trigger_action_urban_airship"},
+    {"prettyName":"Trigger Condition","name":"trigger_condition"},
+    {"prettyName":"Access Permission","name":"trigger_condition_access_permission"},
+    {"prettyName":"Asset ID","name":"trigger_condition_asset_id"},
+    {"prettyName":"Asset is tagged","name":"trigger_condition_asset_tagged"},
+    {"prettyName":"Asset is of type","name":"trigger_condition_asset_type"},
+    {"prettyName":"Attribute Changed","name":"trigger_condition_attribute_changed"},
+    {"prettyName":"Attribute Value","name":"trigger_condition_attribute_value"},
+    {"prettyName":"Keyword Value","name":"trigger_condition_keyword"},
+    {"prettyName":"Interface Mode","name":"trigger_condition_interface_mode"},
+    {"prettyName":"Has a Child / Parent","name":"trigger_condition_link_exists"},
+    {"prettyName":"Metadata Field Updated","name":"trigger_condition_metadata_field_updated"},
+    {"prettyName":"Metadata Set","name":"trigger_condition_metadata_set"},
+    {"prettyName":"Metadata Time","name":"trigger_condition_metadata_time"},
+    {"prettyName":"Metadata Value","name":"trigger_condition_metadata_value"},
+    {"prettyName":"Request Method","name":"trigger_condition_request_method"},
+    {"prettyName":"REST Response","name":"trigger_condition_rest_response"},
+    {"prettyName":"Asset Status","name":"trigger_condition_status"},
+    {"prettyName":"Asset Status Being Changed To","name":"trigger_condition_status_change_to"},
+    {"prettyName":"Tree Location","name":"trigger_condition_tree_location"},
+    {"prettyName":"URL matches","name":"trigger_condition_url_matches"},
+    {"prettyName":"Current user is a LDAP user","name":"trigger_condition_user_ldap"},
+    {"prettyName":"Current user is a public user","name":"trigger_condition_user_public"},
+    {"prettyName":"Current user is a system administrator","name":"trigger_condition_user_sysadmin"},
+    {"prettyName":"Trigger Event","name":"trigger_event"},
+    {"prettyName":"After Asset Built","name":"trigger_event_after_asset_built"},
+    {"prettyName":"After Asset Metadata Updated","name":"trigger_event_after_metadata_updated"},
+    {"prettyName":"Asset Accessed","name":"trigger_event_asset_accessed"},
+    {"prettyName":"Asset Cloned","name":"trigger_event_asset_cloned"},
+    {"prettyName":"Asset Content Changed","name":"trigger_event_asset_content_changed"},
+    {"prettyName":"Asset Created","name":"trigger_event_asset_created"},
+    {"prettyName":"Asset Recached","name":"trigger_event_asset_recached"},
+    {"prettyName":"Asset Updated","name":"trigger_event_asset_updated"},
+    {"prettyName":"Asset Attributes Changed","name":"trigger_event_attributes_changed"},
+    {"prettyName":"Asset Attributes Saved","name":"trigger_event_attributes_saved"},
+    {"prettyName":"Before Asset Created","name":"trigger_event_before_asset_created"},
+    {"prettyName":"Before Asset Deleted","name":"trigger_event_before_asset_deleted"},
+    {"prettyName":"Before Status Change","name":"trigger_event_before_status_change"},
+    {"prettyName":"Before User Logout","name":"trigger_event_before_user_logout"},
+    {"prettyName":"Counter Number Issued","name":"trigger_event_counter_number_issued"},
+    {"prettyName":"Order Submitted","name":"trigger_event_ecommerce_order_submitted"},
+    {"prettyName":"Payment Completed","name":"trigger_event_ecommerce_payment_completed"},
+    {"prettyName":"Simple Edit Accessed","name":"trigger_event_enter_simple_edit"},
+    {"prettyName":"Link Created","name":"trigger_event_link_created"},
+    {"prettyName":"Link Deleted","name":"trigger_event_link_deleted"},
+    {"prettyName":"Asset Lookups Updated","name":"trigger_event_lookups_updated"},
+    {"prettyName":"Matrix Cache Cleared","name":"trigger_event_matrix_cache_cleared"},
+    {"prettyName":"Metadata Time","name":"trigger_event_metadata_time"},
+    {"prettyName":"Asset Metadata Updated","name":"trigger_event_metadata_updated"},
+    {"prettyName":"Paypal IPN Completed","name":"trigger_event_paypal_ipn_completed"},
+    {"prettyName":"Public User Session Created","name":"trigger_event_public_user_session_created"},
+    {"prettyName":"REST Response Received","name":"trigger_event_rest_response_received"},
+    {"prettyName":"Status Changed","name":"trigger_event_status_changed"},
+    {"prettyName":"Asset Tagging Updated","name":"trigger_event_tagging_updated"},
+    {"prettyName":"User Login","name":"trigger_event_user_login"},
+    {"prettyName":"User Logout","name":"trigger_event_user_logout"},
+    {"prettyName":"After Workflow Approval","name":"trigger_event_workflow_approval"},
+    {"prettyName":"After Workflow Rejection","name":"trigger_event_workflow_rejection"},
+    {"prettyName":"Trigger Manager","name":"trigger_manager"},
+    {"prettyName":"TRIM Connector","name":"trim_connector"},
+    {"prettyName":"User","name":"user"},
+    {"prettyName":"Backend User","name":"backend_user"},
+    {"prettyName":"IPB User","name":"ipb_user"},
+    {"prettyName":"System Administrator","name":"system_user"},
+    {"prettyName":"Root User","name":"root_user"},
+    {"prettyName":"LDAP User","name":"ldap_user"},
+    {"prettyName":"LDAP Backend User","name":"ldap_backend_user"},
+    {"prettyName":"LDAP Simple Edit User","name":"ldap_simple_edit_user"},
+    {"prettyName":"Public Access User","name":"public_user"},
+    {"prettyName":"Simple Edit User","name":"simple_edit_user"},
+    {"prettyName":"Bundle","name":"workflow_bundle"},
+    {"prettyName":"Workflow Step Condition","name":"workflow_step_condition"},
+    {"prettyName":"Workflow Stream","name":"workflow_stream"},
+    {"prettyName":"XML User Bridge","name":"xml_user_bridge"}
+];
+
+matrixActionsList = [
+    {
+        "funcName": "createAsset",
+        "assetVarName": null, //the attribute that will contain the table's assets' ids e.g. "asset_id" or "child_id" or "context_id" etc.
+        "vars": [
+            {
+                "required":true, //field must have a value
+                "requiredSet":true, //indicates that jsAPI requires this field to be set in batch request, even if it's "", can only be learnt from experience trying each function
+                "set":true, //field is set in batch request, if false, then will not show up in batch request
+                "name": "parent_id",
+                "type": "string",
+                "val": "",
+                "example": "My parent id",
+                "note": "Parentid of the new parent"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "type_code",
+                "type": "string",
+                "val": "",
+                "example": "My type code",
+                "note": "Type code of the new asset"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "asset_name",
+                "type": "string",
+                "val": "",
+                "example": "My asset name",
+                "note": "Name for the new asset"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Type of link to create."
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "integer",
+                "val": "",
+                "example": "My link value",
+                "note": "Value of the link."
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "sort_order",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Order in the tree"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "is_dependant",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Dependant to parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "is_exclusive",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Exclusive to parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "extra_attributes",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Allows additional attributes"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "attributes",
+                "type": "string",
+                "val": "",
+                "example": "My attributes",
+                "note": "String of additional query string containing key/pair values*"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Create Asset"
+    },
+    {
+        "funcName": "createFileAsset",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "parentID",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Parentid of the new parent"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "type_code",
+                "type": "string",
+                "val": "",
+                "example": "My type code",
+                "note": "Type code of the new asset (defaults to 'File')"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "friendly_name",
+                "type": "string",
+                "val": "",
+                "example": "My friendly name",
+                "note": "Name of the asset being created"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "string",
+                "val": "",
+                "example": "My link type",
+                "note": "Type of link to create for File asset (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Value of the link to create to parent for this new asset"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Create File Asset"
+    },
+    {
+        "funcName": "cloneAsset",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "new_parent",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Asset ID of the parent to clone under"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "clone_num",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Number of clones to create."
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "new_position",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Position to place newly created assets under the parent."
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "string",
+                "val": "",
+                "example": "My link type",
+                "note": "Link type of the cloned asset (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Link value of the cloned asset"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Clone Asset"
+    },
+    {
+        "funcName": "getGeneral",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "get_attributes",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If we are getting non standard attribute values of the assets (FALSE by default)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get General"
+    },
+    {
+        "funcName": "getChildCount",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "level",
+                "type": "integer",
+                "val": "",
+                "example": "",
+                "note": "Number of levels to return, default all"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Child Count"
+    },
+    {
+        "funcName": "getAssetTypes",
+        "assetVarName": "asset_id",
+        "vars": [],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Asset Types"
+    },
+    {
+        "funcName": "getAttributes",
+        "assetVarName": "asset_id",
+        "vars": [],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Attributes"
+    },
+    {
+        "funcName": "setAttribute",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "attr_name",
+                "type": "string",
+                "val": "",
+                "example": "My attr name",
+                "note": "Name of the attribute to change"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "attr_val",
+                "type": "string",
+                "val": "",
+                "example": "My attr val",
+                "note": "Value to change the attribute to"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Attribute"
+    },
+    {
+        "funcName": "setMultipleAttributes",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "field_info (attr_name, attr_val)",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Attribute name and their respect value"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Multiple Attributes"
+    },
+    {
+        "funcName": "getLocksInfo",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "screen_name",
+                "type": "string",
+                "val": "",
+                "example": "My screen name",
+                "note": "The screen to get locks for"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Locks Info"
+    },
+    {
+        "funcName": "acquireLock",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "screen_name",
+                "type": "string",
+                "val": "",
+                "example": "My screen name",
+                "note": "The screen to get locks for"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "dependants_only",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "whether dependants only or all children, defaults to true"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "force_acquire",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "whether to attempt to forcibly acquire the lock of not, defaults to false"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Acquire Lock"
+    },
+    {
+        "funcName": "releaseLock",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "screen_name",
+                "type": "string",
+                "val": "",
+                "example": "My screen name",
+                "note": "The screen to release locks for"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Release Lock"
+    },
+    {
+        "funcName": "trashAsset",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "asset_ids",
+                "type": "array / string",
+                "val": "",
+                "example": "",
+                "note": "Id of the asset(s) to delete"
+            }
+        ],
+        "disabled": true,
+        "blocking": false,
+        "name": "Trash Asset"
+    },
+    {
+        "funcName": "getKeywordsReplacements",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "keywords_array",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Array of keywords to get replacements for"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Keywords Replacements"
+    },
+    {
+        "funcName": "setAssetStatus",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":false,
+                "set":true,
+                "name": "status",
+                "type": "select",
+                "val": assetStatuses[8],
+                "example": "",
+                "note": "The status the asset is to be set to",
+                "ops": assetStatuses
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "cascade",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to cascade the status to non-dependant children (false by default)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "workflow_stream",
+                "type": "string",
+                "val": "",
+                "example": "My workflow stream",
+                "note": "Workflow stream to be passed in"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Asset Status"
+    },
+    {
+        "funcName": "getWebPath",
+        "assetVarName": "asset_id",
+        "vars": [],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Web Path"
+    },
+    {
+        "funcName": "setWebPath",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "paths",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "New web paths to be assigned to asset"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "auto_remap",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to auto-remap (default to True)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Web Path"
+    },
+    {
+        "funcName": "getRoles",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "role_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "The assetid of the roles that is applied"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "user_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "The assteid of the user performing the role"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "include_assetid",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "Whether to include the assetid in the returned array"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "include_globals",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "Whether to query the role view which includes expanded Global roles as individual users"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "expand_groups",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "When TRUE, any groups defined within a role will be replaced with the userids in that group; If FALSE, return the groupids"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "inc_dependants",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If FALSE, filter out dependant assets"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "include_parents",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "When userid is specified; this will return role information for roles that a user has inherited from its parent groups, as well as those directly applied on the user."
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "type_codes",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "When include_assetid is TRUE; filter the returned asset IDs by a specified type code."
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "strict_type_code",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "Whether to use strict type code for type code filter, i.e. type codes not inherited."
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Roles"
+    },
+    {
+        "funcName": "setContentOfEditableFileAsset",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "content",
+                "type": "string",
+                "val": "",
+                "example": "My content",
+                "note": "New content of the asset"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Content Of Editable File Asset"
+    },
+    {
+        "funcName": "importAssetsFromXML",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "filepath",
+                "type": "string",
+                "val": "",
+                "example": "My filepath",
+                "note": "Path to file on the file system"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Import Assets From XML"
+    },
+    {
+        "funcName": "executeHTMLTidy",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "content",
+                "type": "string",
+                "val": "",
+                "example": "My content",
+                "note": "String content to be cleaned up"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Execute HTML Tidy"
+    },
+    {
+        "funcName": "showDifference",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "assetid_1",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Asset ID of the first asset to compare"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "assetid_2",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Asset ID of the second asse to compare"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "paint_layout_1",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Asset ID of the Paint Layout to apply to Asset 1"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "paint_layout_2",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Asset ID of the Paint Layout to apply to Asset 2"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Show Difference"
+    },
+    {
+        "funcName": "createLink",
+        "assetVarName": "child_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Major asset id we are linking"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "link_type",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Type of link to create"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Value of the link"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "sort_order",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Order in the tree"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "is_dependant",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Dependant to parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "is_exclusive",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Exclusive to parent"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Create Link"
+    },
+    {
+        "funcName": "removeLink",
+        "assetVarName": "child_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "string",
+                "val": "",
+                "example": "My link type",
+                "note": "Type of link we are looking for (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Value of link we are looking for ('' by default)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Remove Link"
+    },
+    {
+        "funcName": "removeMultipleLinks",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "link_info",
+                "type": "json object",
+                "val": "",
+                "example": "",
+                "note": "Array of link_info (parent, child, link_type, link_value)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Remove Multiple Links"
+    },
+    {
+        "funcName": "moveLink",
+        "assetVarName": "child_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "old_parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the old parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "old_link_type",
+                "type": "string",
+                "val": "",
+                "example": "My old link_type",
+                "note": "Type of link we are search for between given assets (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "old_link_value",
+                "type": "string",
+                "val": "",
+                "example": "My old link_value",
+                "note": "Value of link we are searching for between given assets ('' by default)"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "new_parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the new parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "new_link_type",
+                "type": "string",
+                "val": "",
+                "example": "My new link_type",
+                "note": "Type of link to use (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "new_link_value",
+                "type": "string",
+                "val": "",
+                "example": "My new link value",
+                "note": "Value of link to use ('' by default)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "new_position",
+                "type": "string",
+                "val": "",
+                "example": "My new position",
+                "note": "The new position"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Move Link"
+    },
+    {
+        "funcName": "updateLink",
+        "assetVarName": "child_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "existing_link_type",
+                "type": "string",
+                "val": "",
+                "example": "My existing link_type",
+                "note": "Existing link type between the assets (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "existing_link_value",
+                "type": "string",
+                "val": "",
+                "example": "My existing link_value",
+                "note": "Existing link value between the assets  ('' by default)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "string",
+                "val": "",
+                "example": "My link type",
+                "note": "Link type to be updated to (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Link value to be updated to ('' by default)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "sort_order",
+                "type": "string",
+                "val": "",
+                "example": "My sort order",
+                "note": "The new position"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "locked",
+                "type": "string",
+                "val": "",
+                "example": "My locked",
+                "note": "The asset link lock status (locked by default)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Update Link"
+    },
+    {
+        "funcName": "updateMultipleLinks",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "link_info",
+                "type": "json object",
+                "val": "",
+                "example": "",
+                "note": "Array of link_info (parent, child, link_type, link_value)"
+            }
+        ],
+        "disabled": true,
+        "blocking": false,
+        "name": "Update Multiple Links"
+    },
+    {
+        "funcName": "getLinkId",
+        "assetVarName": "child_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "parent_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the parent"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_type",
+                "type": "string",
+                "val": "",
+                "example": "My link type",
+                "note": "Type of link we are looking for (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_value",
+                "type": "string",
+                "val": "",
+                "example": "My link value",
+                "note": "Value of link we are looking for ('' by default)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "all_info",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If we want all the link information or just linkid"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Link Id"
+    },
+    {
+        "funcName": "getPermissions",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "level",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Permission level: 1=READ 2=WRITE 3=ADMIN"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Permissions"
+    },
+    {
+        "funcName": "getWorkflowSchema",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "granted",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "What is the status of workflow we are trying to get (default to Null)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "running",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "True = granted  False = denied Null = get all"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Workflow Schema"
+    },
+    {
+        "funcName": "getParents",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "levels",
+                "type": "integer",
+                "val": "",
+                "example": "",
+                "note": "Number of levels to return"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "type_codes",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Asset type code that we want back"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_types",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Link type of links we are looking for (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_values",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Link values allowed on the asset returned"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "get_attributes",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If we are getting non standard attribute values of the assets (FALSE by default)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Parents"
+    },
+    {
+        "funcName": "getChildren",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "levels",
+                "type": "integer",
+                "val": "",
+                "example": "",
+                "note": "Number of levels to return"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "type_codes",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Asset type code that we want back"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_types",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Link type of links we are looking for (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "link_values",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Link values allowed on the asset returned"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "get_attributes",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If we are getting non standard attribute values of the assets (FALSE by default)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Children"
+    },
+    {
+        "funcName": "getAssetTree",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "levels",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Number of levels to return"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Asset Tree"
+    },
+    {
+        "funcName": "getLineage",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "asset_url",
+                "type": "string",
+                "val": "",
+                "example": "My/asset/url",
+                "note": "URL or asset ID of the asset to get the lineage of"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "significant_link_only",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return significant links only (TYPE 1 and TYPE 2 links)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Lineage"
+    },
+    {
+        "funcName": "getLineageFromUrl",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "asset_url",
+                "type": "string",
+                "val": "",
+                "example": "My/asset/url",
+                "note": "URL of the asset to get the lineage of"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Lineage From Url"
+    },
+    {
+        "funcName": "getUrlFromLineage",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "lineage",
+                "type": "string",
+                "val": "",
+                "example": "My lineage",
+                "note": "An array of asset IDs in lineage order, e.g. [\"80\",\"85\",\"200\"] or [{\"assetid\":\"80\"},{\"assetid\":\"85\"}]"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "root_url",
+                "type": "string",
+                "val": "",
+                "example": "My root url",
+                "note": "A root URL to filter the results against multiple roots"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "protocol",
+                "type": "string",
+                "val": "",
+                "example": "My protocol",
+                "note": "A protocol to filter the results, e.g. http, https"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Url From Lineage"
+    },
+    {
+        "funcName": "getMetadata",
+        "assetVarName": "asset_id",
+        "vars": [],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Metadata"
+    },
+    {
+        "funcName": "setMetadata",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "field_id",
+                "type": "integer",
+                "val": "",
+                "example": "125",
+                "note": "Id of the metadata field we are setting info for"
+            },
+            {
+                "required":false,
+                "requiredSet":true,
+                "set":true,
+                "name": "field_val",
+                "type": "string",
+                "val": "",
+                "example": "My field val",
+                "note": "The value set as metadata*"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Metadata"
+    },
+    {
+        "funcName": "setMetadataAllFields",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "field_info",
+                "type": "array",
+                "val": "",
+                "example": "",
+                "note": "Field Ids and their values"
+            }
+        ],
+        "disabled": true,
+        "blocking": false,
+        "name": "Set Metadata All Fields"
+    },
+    {
+        "funcName": "getMetadataSchema",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "assetid",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "The ID of the asset to get the metadata schema info of"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "granted",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return metadata schemas that have been applied (TRUE) or denied (FALSE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "cascades",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return metadata schemas that cascade to newly created child assets (TRUE) or schemas that do not (FALSE)"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Metadata Schema"
+    },
+    {
+        "funcName": "editMetadataSchema",
+        "assetVarName": "asset_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "assetid",
+                "type": "string",
+                "val": "",
+                "example": "My assetid",
+                "note": "The asset to set/unset the metadata schema on"
+            },
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "schemaid",
+                "type": "string",
+                "val": "",
+                "example": "My schemaid",
+                "note": "The metadata schema to be set/unset on the asset"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "set",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "Whether the metadata schema is being set (1) or unset (0)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "granted",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "whether the metadata schema is being applied (TRUE) or denied (FALSE)"
+            },
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "cascades",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "whether or not the schema should be cascaded to newly created assets"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Edit Metadata Schema"
+    },
+    {
+        "funcName": "getAlternateContext",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "all_info",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return all information of returned contexts"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Alternate Context"
+    },
+    {
+        "funcName": "getCurrentContext",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "all_info",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return all information of returned contexts"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get Current Context"
+    },
+    {
+        "funcName": "getAllContexts",
+        "assetVarName": null,
+        "vars": [
+            {
+                "required":false,
+                "requiredSet":false,
+                "set":false,
+                "name": "all_info",
+                "type": "boolean",
+                "val": "0",
+                "example": "",
+                "note": "If to return all information of returned contexts"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Get All Contexts"
+    },
+    {
+        "funcName": "setContext",
+        "assetVarName": "context_id",
+        "vars": [
+            {
+                "required":true,
+                "requiredSet":true,
+                "set":true,
+                "name": "context_id",
+                "type": "integer",
+                "val": "",
+                "example": "132435",
+                "note": "Id of the context you want to activate"
+            }
+        ],
+        "disabled": false,
+        "blocking": false,
+        "name": "Set Context"
+    },
+    {
+        "funcName": "restoreContext",
+        "assetVarName": null,
+        "vars": [],
+        "disabled": false,
+        "blocking": false,
+        "name": "Restore Context"
+    }
+];
+
+
+</script>
