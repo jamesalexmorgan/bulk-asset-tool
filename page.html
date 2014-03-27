@@ -141,23 +141,58 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="col-sm-3 control-label" for="createNumberOfAssets">Number of assets to create</label>
+              <label class="col-sm-3 control-label">Create type</label>
               <div class="col-sm-6">
-                <input class="form-control" name="createNumberOfAssets" type="text" ng-model="createNumberOfAssets" />
+
+                <div class="radio">
+                  <label>
+                    <input type="radio" ng-model="createType" value="CSV" checked> CSV
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" ng-model="createType" value="normal"> Normal
+                  </label>
+                </div>          
+              </div>
+            </div>            
+
+            <div class="showing-block-{{createType == 'normal'}}">
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="createNumberOfAssets">Number of assets to create</label>
+                <div class="col-sm-6">
+                  <input class="form-control" name="createNumberOfAssets" type="text" ng-model="createNumberOfAssets" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="createName">Asset name</label>
+                <div class="col-sm-6">
+                  <input class="form-control" name="createName" type="text" ng-model="createName" />
+                </div>
               </div>
             </div>
-            <div class="form-group">
-              <label class="col-sm-3 control-label" for="createName">Asset name</label>
-              <div class="col-sm-6">
-                <input class="form-control" name="createName" type="text" ng-model="createName" />
+
+            <div class="showing-block-{{createType == 'CSV'}}">
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="createNameCSV">Names CSV</label>
+                <div class="col-sm-6">
+                  <textarea class="form-control" name="createNameCSV" id="" rows="6" ng-model="createNameCSV" placeholder="E.g. Development types,Related links,Development categories,Exempt development,Complying development...."></textarea>
+                </div>
               </div>
             </div>
+
             <div class="form-group">
               <div class="col-sm-3 control-label">                
               </div>
               <div class="col-sm-6">
                 <button class="btn btn-primary btn-lg" ng-click="createAssets()">Create assets</button>  
-                 <input type="checkbox" ng-model="createAssetsLoadAfter"> Load after created
+                <input type="checkbox" ng-model="createAssetsLoadAfter"> Load after created
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" ng-model="batchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                  </label>
+                </div>
 
               </div>
               
@@ -259,7 +294,7 @@
             <button type="submit" class="btn btn-primary btn-lg" ng-click="executeActions()">Execute actions</button> 
             <div class="checkbox">
               <label>
-                <input type="checkbox" ng-model="actionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                <input type="checkbox" ng-model="batchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
               </label>
             </div>
             
@@ -325,7 +360,7 @@
 
     userVarSortDefaultsArray = ['id'];
     userVarSortDefaults = ['id'];
-    userVarSortDefaultsDirections = [false];// false = regular, true = reversed
+    userVarSortDefaultsDirections = [true];// false = regular, true = reversed
     userVarFieldsDisplayDefaults = ['name','status','created','created_username'];
     userVarPrettyDateFormat = "dd MMM 'yy hh:mmtt";
     userVarTypeCodesDefaults = ['page_standard','page_asset_listing','file','image','folder','form'];
@@ -640,7 +675,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 
     $scope.loadType = 'ids';
-    $scope.loadAssetIdsString = "72";
+    $scope.loadAssetIdsString = "907,110,911";
     $scope.loadAssetIds = [];
     $scope.loadAssetsCascade = true;
     $scope.loadAssetsIncludeRoots = false;
@@ -657,15 +692,21 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
     $scope.loadAssetsGetMetadata = true;
 
-    $scope.getData = function(){
+    $scope.getData = function(assetIds){
+      //there is the option to pass in an array of ids, useful for other functions that need to load assets
       $scope.loadingStart('Loading assets...');
-      //get an array of all the ids
-      $scope.loadAssetIds = $scope.loadAssetIdsString.split(',');
+
+      if(assetIds){
+        $scope.loadAssetIds = assetIds;
+      }else{
+        //get an array of all the ids
+        $scope.loadAssetIds = $scope.loadAssetIdsString.split(',');
+      }
       
       $scope.preparedAssetIds = [];
 
-      //if cascade
-      if($scope.loadAssetsCascade){
+      //if cascade is set AND input assetIds is not set
+      if($scope.loadAssetsCascade && !assetIds){
 
         //get all children 
         $scope.gatheredResults = [];
@@ -705,16 +746,20 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                 $scope.resultAssets.push(asset);
                 $scope.preparedAssetIds.push(asset.id);
               });
-              //load data into table
+
+              //finished getting general data
               $scope.loadAssetDataSet($scope.resultAssets,'');
-              // load metadata if checked
               $scope.getDataStepTwo();
             });
           }else{
-            //load data into table
-            $scope.loadAssetDataSet($scope.resultAssets,'');
             //finished getting general data
-            $scope.getDataStepTwo();
+            if($scope.resultAssets.length){//sometimes has no children
+              $scope.loadAssetDataSet($scope.resultAssets,'');
+              $scope.getDataStepTwo();
+            }else{
+              $scope.loading = false;
+              $scope.message('error','No assets to load','Sorry, none of these assets had any children of the type codes specified.');
+            }
           }          
 
 
@@ -845,7 +890,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 /**************************  3.1 Vars  ***************************/
 /*****************************************************************/
-  $scope.actionsTest = true;
+  $scope.batchFunctionsTest = true;
   $scope.actionsList = matrixActionsList;
 
   $scope.selectedAction = _.where($scope.actionsList,{funcName:"setMetadata"})[0]; // most common function
@@ -858,16 +903,16 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 
   $scope.executeActions = function(){
-    var assets = [];
-    var assetIds = [];
+    var assetsActioning = [];
+    var assetsActioningIds = [];
     //if radio is on selected then get just those
     if($scope.executeSelectedRadio === 'selected'){
-      assets = $scope.assetsSelected;
+      assetsActioning = $scope.assetsSelected;
     }else{
-      assets = $scope.assets;
+      assetsActioning = $scope.assets;
     }
 
-    if($scope.selectedAction.assetVarName != null && assets.length == 0){
+    if($scope.selectedAction.assetVarName != null && assetsActioning.length == 0){
       $scope.message('error','No assets selected','Please select some assets in the table above.');
       return null;
     }
@@ -902,14 +947,14 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       });
     }
 
-    //get all assetIds from assets array
-    _.each(assets,function(asset){
-      assetIds.push(asset.id);
+    //get all assetsActioningIds from assetsActioning array
+    _.each(assetsActioning,function(asset){
+      assetsActioningIds.push(asset.id);
     });
 
-    var batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetIds,fieldKeywords);
+    var batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetsActioningIds,fieldKeywords);
 
-    if($scope.actionsTest){
+    if($scope.batchFunctionsTest){
       $scope.message('','Your batch of functions',batchFunctionsActionsExecute);  
     }else{
       $scope.loadingStart('Executing ' + $scope.selectedAction.name + '...');
@@ -929,22 +974,10 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
           }
         );
         
-
+        //if it was a group asset function
         if($scope.selectedAction.assetVarName){
-
           $scope.loadingStart('Reloading actioned assets...');
-          
-          var actionedIds = "";
-          _.each($scope.assetsSelected, function(asset, index){
-            if(asset.id){
-              actionedIds += asset.id;
-              if(index < ($scope.assetsSelected.length-1)){actionedIds += ','}
-            }
-          });
-
-          $scope.loadAssetIdsString = actionedIds;
-          $scope.loadAssetsCascade = false;
-          $scope.getData();
+          $scope.getData(assetsActioningIds);
         }
 
       });
@@ -1164,6 +1197,8 @@ $scope.errorCheckResults = function(results,successCallback,warningCallback,erro
 /*****************************************************************/
 
 $scope.parentAssetId = '136';
+$scope.createType = 'CSV';
+$scope.createNameCSV = '';
 $scope.createNumberOfAssets = 1;
 $scope.createName = 'Asset %index%';
 $scope.createTypeCodeSelected = _.where($scope.loadAssetsTypeCodes,{name:'page_standard'})[0];
@@ -1177,29 +1212,33 @@ $scope.createAssets = function(){
 
   var batchFunctionsCreateAssets = $scope.makeCreateAssetsBatchFunctions();
 
-  $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.prettyName + "...");
-  jspAPIService.executeBatch(batchFunctionsCreateAssets,function(results){
+  if($scope.batchFunctionsTest){
+    $scope.message('','Your batch of functions',batchFunctionsCreateAssets);  
+  }else{
 
-    //if(){//error check
-      var createdIds = "";
-      _.each(results, function(result, index){
-        if(result.id){
-          createdIds += result.id;
-          if(index < (results.length-1)){createdIds += ','}
+    $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.prettyName + "...");
+    jspAPIService.executeBatch(batchFunctionsCreateAssets,function(results){
+
+      //if(){//error check
+        var createdIds = "";
+        _.each(results, function(result, index){
+          if(result.id){
+            createdIds += result.id;
+            if(index < (results.length-1)){createdIds += ','}
+          }
+        });
+
+        $scope.message('success','Assets Created',results);
+        if($scope.createAssetsLoadAfter){ 
+          $scope.loadAssetIdsString = createdIds;
+          $scope.loadAssetsCascade = false;
+          $scope.getData();
         }
-      });
-
-      $scope.message('success','Assets Created',results);
-      if($scope.createAssetsLoadAfter){ 
-        $scope.loadAssetIdsString = createdIds;
-        $scope.loadAssetsCascade = false;
-        $scope.getData();
-      }
-    // }else{
-    //   $scope.message('error','Error Creating Assets',results);
-    // }
-  });
-
+      // }else{
+      //   $scope.message('error','Error Creating Assets',results);
+      // }
+    });
+  }//end batch functions test
   
 }
 
@@ -1208,19 +1247,55 @@ $scope.makeCreateAssetsBatchFunctions = function(){
     //builds the batch functions object depending on what you pass in
     var batchFunctions = {};
 
-    for(var c =0;c < $scope.createNumberOfAssets;c++){
-      var newFunction = {
-        "function":'createAsset',
-        "args":{
-          "parent_id":$scope.parentAssetId,
-          "type_code":$scope.createTypeCodeSelected.name,
-          "asset_name":$scope.createName.replace('%index%',String(c+1))
-        },
-        "blocking":0
+    if($scope.createType == 'CSV'){
+      // IF type CSV
+      var names = $scope.createNameCSV.split(',');
+
+      if(names.length){
+        for(var n = 0;n < names.length;n++){
+          var parent_id = $scope.parentAssetId;
+          var type_code = $scope.createTypeCodeSelected.name;
+          var asset_name = names[n];
+          var newFunction = {
+            "function":'createAsset',
+            "args":{
+              "parent_id":parent_id,
+              "type_code":type_code,
+              "asset_name":asset_name
+            },
+            "blocking":0
+          };
+
+          batchFunctions[String(n)] = newFunction;
+        };
+      }else{
+        $scope.message('error','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
+      }// end if names.length
+
+    }else{
+      //IF 'normal'
+      for(var c =0;c < $scope.createNumberOfAssets;c++){
+          var parent_id = $scope.parentAssetId;
+          var type_code = $scope.createTypeCodeSelected.name;
+          var asset_name = $scope.createName.replace('%index%',String(c+1));
+          var newFunction = {
+            "function":'createAsset',
+            "args":{
+              "parent_id":parent_id,
+              "type_code":type_code,
+              "asset_name":asset_name
+            },
+            "blocking":0
+          };
+
+        batchFunctions[String(c)] = newFunction;
       };
 
-      batchFunctions[String(c)] = newFunction;
-    };
+
+    }
+
+
+
     return batchFunctions;
 }
 
