@@ -15,23 +15,23 @@
         <h4>Sorting</h4>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[0]" ng-change="sort.changed(0)" ng-options="f for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[0]" ng-change="sort.changed(0)"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(0)">x</a> 
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[0]" ng-change="sort.changed(0)" ng-disabled="!sort.fields[0]"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(0)" ng-disabled="!sort.fields[0]">x</a> 
         </div> <br>
         <div class="form-group">
-          <select class="form-control" ng-model="sort.fields[1]" ng-change="sort.changed(1)" ng-options="f for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[1]" ng-change="sort.changed(1)"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(1)">x</a> 
+          <select class="form-control" ng-model="sort.fields[1]" ng-change="sort.changed(1)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 1"></select>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[1]" ng-change="sort.changed(1)" ng-disabled="sort.fields.length < 1 || !sort.fields[1]"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(1)" ng-disabled="sort.fields.length < 1 || !sort.fields[1]">x</a> 
         </div> <br>
         <div class="form-group">
-          <select class="form-control" ng-model="sort.fields[2]" ng-change="sort.changed(2)" ng-options="f for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[2]" ng-change="sort.changed(2)"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(2)">x</a> 
+          <select class="form-control" ng-model="sort.fields[2]" ng-change="sort.changed(2)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 2"></select>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[2]" ng-change="sort.changed(2)" ng-disabled="sort.fields.length < 2 || !sort.fields[2]"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(2)" ng-disabled="sort.fields.length < 2 || !sort.fields[2]">x</a> 
         </div> <br>
         <div class="form-group">
-          <select class="form-control" ng-model="sort.fields[3]" ng-change="sort.changed(3)" ng-options="f for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[3]" ng-change="sort.changed(3)"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(3)">x</a> 
+          <select class="form-control" ng-model="sort.fields[3]" ng-change="sort.changed(3)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 3"></select>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[3]" ng-change="sort.changed(3)" ng-disabled="sort.fields.length < 3 || !sort.fields[3]"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(3)" ng-disabled="sort.fields.length < 3 || !sort.fields[3]">x</a> 
         </div>
       </div><!-- end #sorting -->
 
@@ -68,7 +68,7 @@
                   <span class="bold">{{assets.length}} assets</span>
                 </div>
                 <div class="right">
-                  With selected (<span class="bold">{{assetsSelected.length}} assets</span>): <a href="#" ng-click="removeSelectedAssetsFromList()">Remove</a>
+                  With selected (<span class="bold">{{assetsSelected.length}} assets</span>): <a href="#" ng-click="removeSelectedAssetsFromList()">Remove</a> | <a title="Reload data for selected assets" href="#" ng-click="refreshSelectedAssets()">Refresh</a>
                 </div>
               </div>
 
@@ -100,6 +100,8 @@
                   </tr>
                 </tbody>
               </table>
+
+              <p class="showing-{{(search != '' && searchedAssets.length == 0)}}"><span class="bold">HINT</span>: clear the search filter (there are still <span class="bold">{{assets.length}}</span> assets in the table)</p>
           </div>
 
 
@@ -174,7 +176,7 @@
 
             <div class="showing-block-{{createType == 'CSV'}}">
               <div class="form-group">
-                <label class="col-sm-3 control-label" for="createNameCSV">Names CSV</label>
+                <label class="col-sm-3 control-label" for="createNameCSV">Names CSV <br><span class="showing-{{createNameCSV != ''}}">({{createNameCSV.split(',').length}} names)</span></label>
                 <div class="col-sm-6">
                   <textarea class="form-control" name="createNameCSV" id="" rows="6" ng-model="createNameCSV" placeholder="E.g. Development types,Related links,Development categories,Exempt development,Complying development...."></textarea>
                 </div>
@@ -441,10 +443,10 @@ bulkAssetApp.filter('prettifyDate', function() {
       }
       return string;
       //if parseable as another date 
-/*      var date = new Date(string);
+      var date = new Date(string);
       if(date.toString() != 'Invalid Date'){
         return date.toString(format);
-      }*/
+      }
       //TODO might want to decide which fields are dates
     }
 
@@ -552,6 +554,19 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       $scope.removeFromArray($scope.assets,asset);
     });
     $scope.assetsSelected = [];
+  }
+
+  $scope.refreshSelectedAssets = function() {
+    //if there are selected assets then, reload their data
+    if($scope.assetsSelected.length){
+      var assetsSelectedIds = [];
+      _.each($scope.assetsSelected,function(asset){
+        assetsSelectedIds.push(asset.id);
+      });
+      $scope.getData(assetsSelectedIds);
+    }else{
+      $scope.message('error','No assets selected',"Please select some assets in the table to refresh.");
+    }
   }
 
   $scope.selectAll = false;
@@ -1138,7 +1153,7 @@ $scope.getCSV = function(){
   //if someone wants to use tab
   if($scope.csvDivider == 'tab')$scope.csvDivider = '\t';
 
-
+  // start building csv
   myCSV += 'id' + $scope.csvDivider;
   _.each($scope.fieldsDisplay,function(field, index){
     myCSV += field;
@@ -1216,23 +1231,22 @@ $scope.createAssets = function(){
     $scope.message('','Your batch of functions',batchFunctionsCreateAssets);  
   }else{
 
-    $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.prettyName + "...");
+    $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.prettyName + "s...");
     jspAPIService.executeBatch(batchFunctionsCreateAssets,function(results){
 
+
       //if(){//error check
-        var createdIds = "";
+        $scope.message('success','Assets Created',results);
+
+        var resultIds = [];
         _.each(results, function(result, index){
           if(result.id){
-            createdIds += result.id;
-            if(index < (results.length-1)){createdIds += ','}
+            resultIds.push(result.id);
           }
         });
 
-        $scope.message('success','Assets Created',results);
         if($scope.createAssetsLoadAfter){ 
-          $scope.loadAssetIdsString = createdIds;
-          $scope.loadAssetsCascade = false;
-          $scope.getData();
+          $scope.getData(resultIds);
         }
       // }else{
       //   $scope.message('error','Error Creating Assets',results);
