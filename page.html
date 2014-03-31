@@ -247,19 +247,29 @@
           <form class="form-inline" role="form">
             <div class="form-group">
               <button class="btn btn-primary btn-lg" ng-click="getCSV()">Get CSV</button>
-              <input id="csv-divider" type="text" class="form-control" ng-model="csvDivider" ng-change="getCSV()"/> divider (',' or ';' or 'tab' etc.)
-              <br><br>
+              <input id="csv-divider" name="csv-divider" title="The divider that will separate the values in the CSV (',' or ';' or 'tab' etc.)" type="text" class="form-control" ng-model="csvDivider" ng-change="getCSV()"/> <label for="csv-divider" title="The divider that will separate the values in the CSV (',' or ';' or 'tab' etc.)">divider</label>&nbsp;
               <div class="radio">
                 <label>
-                  <input type="radio" ng-model="executeSelectedRadio" value="selected"> <span class="bold">Selected</span> assets (<span class="bold">{{assetsSelected.length}}</span>)
+                  <input type="radio" title="Vertically oriented CSV (normal)" ng-model="csvType" value="vertical" ng-change="getCSV()"> Vertical
                 </label>
               </div>
               <div class="radio">
                 <label>
-                  <input type="radio" ng-model="executeSelectedRadio" value="all"> <span class="bold">All</span> assets (<span class="bold">{{assets.length}}</span>)
+                  <input type="radio" title="Horizontally oriented CSV" ng-model="csvType" value="horizontal" ng-change="getCSV()"> Horizontal
+                </label>
+              </div>      
+
+              <br><br>
+              <div class="radio">
+                <label>
+                  <input type="radio" ng-model="csvSelectedRadio" value="selected"> <span class="bold">Selected</span> assets (<span class="bold">{{assetsSelected.length}}</span>)
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" ng-model="csvSelectedRadio" value="all"> <span class="bold">All</span> assets (<span class="bold">{{assets.length}}</span>)
                 </label>
               </div>  
-
             </div>  
           </form>
         </div>
@@ -441,12 +451,14 @@ bulkAssetApp.filter('prettifyDate', function() {
           date.addSeconds(string);
           return date.toString(format);
       }
-      return string;
       //if parseable as another date 
       var date = new Date(string);
       if(date.toString() != 'Invalid Date'){
         return date.toString(format);
       }
+
+      return string;
+
       //TODO might want to decide which fields are dates
     }
 
@@ -587,6 +599,9 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
     $scope.assetsSelected = _.filter($scope.assets,function(asset) {
       return asset.selected == true;
     });
+    if($scope.cpanel.tabStatuses[3] == 'active'){
+      $scope.csvSelectedRadio = 'selected';
+    }
     $scope.executeSelectedRadio = 'selected';
   }
 
@@ -1127,13 +1142,16 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 
 $scope.csvDivider = ',';
+$scope.csvSelectedRadio = 'all';
+$scope.csvType = 'vertical';
 
 $scope.getCSV = function(){
   var myCSV = '';
 
+
   var assets = [];
   //if radio is on selected then get just those
-  if($scope.executeSelectedRadio === 'selected'){
+  if($scope.csvSelectedRadio === 'selected'){
     if($scope.assetsSelected.length){
       assets = $scope.assetsSelected;
     }else{
@@ -1153,25 +1171,49 @@ $scope.getCSV = function(){
   //if someone wants to use tab
   if($scope.csvDivider == 'tab')$scope.csvDivider = '\t';
 
-  // start building csv
-  myCSV += 'id' + $scope.csvDivider;
-  _.each($scope.fieldsDisplay,function(field, index){
-    myCSV += field;
-    if(index < ($scope.fieldsDisplay.length-1)){myCSV += $scope.csvDivider}
-  });
-  myCSV += '\n';
-
   var orderedAssets = $filter('orderBy')(assets,$scope.sort.array);
 
-  _.each(orderedAssets,function(asset){
-    myCSV += asset.id + $scope.csvDivider;
+  if($scope.csvType == 'vertical'){
+    // start building csv
+    myCSV += 'id' + $scope.csvDivider;
     _.each($scope.fieldsDisplay,function(field, index){
-      //apply date filter to values
-      if(asset[field]){myCSV += $filter('prettifyDate')(asset[field],$scope.prettyDateFormat,$scope.prettyDates);}
+      myCSV += field;
       if(index < ($scope.fieldsDisplay.length-1)){myCSV += $scope.csvDivider}
     });
     myCSV += '\n';
-  });
+
+    _.each(orderedAssets,function(asset){
+      myCSV += asset.id + $scope.csvDivider;
+      _.each($scope.fieldsDisplay,function(field, index){
+        //apply date filter to values
+        if(asset[field]){myCSV += $filter('prettifyDate')(asset[field],$scope.prettyDateFormat,$scope.prettyDates);}
+        if(index < ($scope.fieldsDisplay.length-1)){myCSV += $scope.csvDivider}
+      });
+      myCSV += '\n';
+    });
+  }
+
+  if($scope.csvType == 'horizontal'){
+
+      //do 
+      myCSV += 'id' + $scope.csvDivider
+      _.each(orderedAssets,function(asset, index){
+        myCSV += asset.id;
+        if(index < (orderedAssets.length-1)){myCSV += $scope.csvDivider}
+      });
+      myCSV += '\n';
+
+      _.each($scope.fieldsDisplay,function(field){
+        myCSV += field + $scope.csvDivider //field name first
+        _.each(orderedAssets,function(asset, index){
+            //apply date filter to values
+            if(asset[field]){myCSV += $filter('prettifyDate')(asset[field],$scope.prettyDateFormat,$scope.prettyDates);}
+            if(index < (orderedAssets.length-1)){myCSV += $scope.csvDivider}
+        });
+        myCSV += '\n';
+
+      });
+  }
 
   $scope.message('success',"Here's your csv",myCSV);
 }
