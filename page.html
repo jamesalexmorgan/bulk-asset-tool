@@ -42,7 +42,7 @@
         <select class="form-control" id="displayFields" style="height:200px;" ng-model="fieldsDisplay" ng-options="f for f in fields" multiple="multiple"></select>
         <br><br>
         <input type="checkbox" ng-model="prettyDates"> Pretty dates <br>
-        <span class="showing-{{prettyDates}}">Format <input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
+        <span class="showing-{{prettyDates}}" style="display:block;">Format <input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
 
 
       </div><!-- end #display-fields -->
@@ -316,23 +316,29 @@
         <div class="col-sm-9 showing-{{selectedAction != null}}">
             <table class="action-fields">
               <thead>
-                <th class="field">Field</th>
-                <th class="set">Set</th>
-                <th class="value">Value</th>
-                <th class="desc">Description</th>
+                <th class="field" title="Name of the field">Field</th>
+                <th class="set" title="Weather or not to set a value to this field, some fields are required to be set">Set</th>
+                <th class="set" title="Weather or not it is a CSV field. When checked, you must put in a CSV of values of the same quantity as there are assets being actioned">CSV</th>
+                <th class="value" title="The value that will be set to the field (single value/CSV)">Value</th>
+                <th class="desc" title="More info on this field">Description</th>
               </thead>
               <tr class="action-var data-from-{{var.dataFrom}}" ng-repeat="var in selectedAction.vars" title="">
-                <td title="{{var.name}}"><span class="required" ng-if="var.required">* </span>{{var.name}}</td>
+                <td title="{{var.name}}"><span class="required" ng-if="var.required">*</span>{{var.name}}</td>
                 <td title="Set value for {{var.name}}"><input type="checkbox" ng-model="var.set" ng-disabled="var.requiredSet"/></td>
+                <td title="Input type for {{var.name}}"><input type="checkbox" ng-model="var.csv" ng-disabled="(var.set && !(var.type == 'string' || var.type == 'integer'))"/></td>
                 <td>
-                  <input class="form-control showing-block-{{(var.type == 'string' || var.type == 'integer' || var.type == 'json object' || var.type == 'array')}}" type="text" ng-model="var.val" placeholder="{{var.example}}" ng-disabled="!var.set"/>
+                  <div class="has-error-{{(var.required && var.val =='') || (var.csv && executeSelectedRadio == 'selected' && var.val.split(',').length != assetsSelected.length) || (var.csv && executeSelectedRadio == 'all' && var.val.split(',').length != assets.length)}}">
+                    <input class="form-control showing-block-{{(var.type == 'string' || var.type == 'integer' || var.type == 'json object' || var.type == 'array')}} " type="text" ng-model="var.val" placeholder="{{var.example}}" ng-disabled="!var.set"/>
+                  </div>
                   <select class="form-control showing-block-{{var.type == 'boolean'}}" type="checkbox" ng-model="var.val" ng-disabled="!var.set">
                     <option value="0">No</option>
                     <option value="1">Yes</option>
                   </select>
                   <select class="form-control showing-block-{{var.type == 'select'}}" ng-model="var.val" ng-options="option.name for option in var.ops" ng-disabled="!var.set"></select>
                 </td>
-                <td title="{{var.note}}">(<span class="bold">{{var.type}}</span>) {{var.note | limitTo:70}}<span class="showing-inline-{{var.note.length > 70}}">...</span> </td>
+                <td title="{{var.note}}">
+                  (<span class="bold">{{var.type}}</span>) {{var.note | limitTo:70}}<span class="showing-inline-{{var.note.length > 70}}">...</span> <span class="bold showing-{{var.csv}}">({{var.val.split(',').length}} values)</span>
+                </td>
               </tr>
             </table>
 
@@ -368,16 +374,15 @@
 
 
 
-    /* User vars */
-
-    userVarSortDefaultsArray = ['id'];
-    userVarSortDefaults = ['id'];
-    userVarSortDefaultsDirections = [true];// false = regular, true = reversed
-    userVarFieldsDisplayDefaults = ['name','status','created','created_username'];
-    userVarPrettyDateFormat = "dd MMM 'yy hh:mmtt";
-    userVarTypeCodesDefaults = ['page_standard','page_asset_listing','file','image','folder','form'];
-    userVarMetadataPrefix = '(Meta) ';
-    userVarSiteRoot = 'http://syd-prodvm-matrix06.syd.squiz.net.au';
+/* User vars */
+userVarSortDefaultsArray = ['-id'];
+userVarSortDefaults = ['id'];
+userVarSortDefaultsDirections = [true];// false = regular, true = reversed
+userVarFieldsDisplayDefaults = ['name','status','created','created_username'];
+userVarPrettyDateFormat = "dd MMM 'yy hh:mmtt";
+userVarTypeCodesDefaults = ['page_standard','page_asset_listing','file','image','folder','form'];
+userVarMetadataPrefix = '(Meta) ';
+userVarSiteRoot = 'http://syd-prodvm-matrix06.syd.squiz.net.au';
 
 
 function getObjectLength(batchFunctions) {
@@ -566,6 +571,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       $scope.removeFromArray($scope.assets,asset);
     });
     $scope.assetsSelected = [];
+    searchChanged();//just to update search, in case you delete all the ones you searched for
   }
 
   $scope.refreshSelectedAssets = function() {
@@ -577,7 +583,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       });
       $scope.getData(assetsSelectedIds);
     }else{
-      $scope.message('error','No assets selected',"Please select some assets in the table to refresh.");
+      $scope.message('error-true','No assets selected',"Please select some assets in the table to refresh.");
     }
   }
 
@@ -689,7 +695,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
 /**********************  1.3.4 Pretty Dates **********************/
 
-  $scope.prettyDates = true;
+  $scope.prettyDates = false;
   $scope.prettyDateFormat = userVarPrettyDateFormat;
 /*****************************************************************/
 /*****************************************************************/
@@ -788,7 +794,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
               $scope.getDataStepTwo();
             }else{
               $scope.loading = false;
-              $scope.message('error','No assets to load','Sorry, none of these assets had any children of the type codes specified.');
+              $scope.message('error-true','No assets to load','Sorry, none of these assets had any children of the type codes specified.');
             }
           }          
 
@@ -937,17 +943,17 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
     var assetsActioningIds = [];
     //if radio is on selected then get just those
     if($scope.executeSelectedRadio === 'selected'){
-      assetsActioning = $scope.assetsSelected;
+      assetsActioning = $filter('orderBy')($scope.assetsSelected,$scope.sort.array);
     }else{
-      assetsActioning = $scope.assets;
+      assetsActioning = $filter('orderBy')($scope.assets,$scope.sort.array)
     }
 
     if($scope.selectedAction.assetVarName != null && assetsActioning.length == 0){
-      $scope.message('error','No assets selected','Please select some assets in the table above.');
+      $scope.message('error-true','No assets selected','Please select some assets in the table above.');
       return null;
     }
     if($scope.selectedAction == null){
-      $scope.message('error','No action selected','Please select an action from the dropdown on the left.');
+      $scope.message('error-true','No action selected','Please select an action from the dropdown on the left.');
       return null;
     }
 
@@ -956,11 +962,21 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
     _.each($scope.selectedAction.vars,function(fieldVar){
       if(fieldVar.required && fieldVar.val == ''){missingField = true;}
     })
-
     if(missingField){
-      $scope.message('error','Required fields',"Please fill out all fields marked with a '*'");
+      $scope.message('error-true','Required fields',"Please fill out all fields marked with a '*'");
       return null;
     }
+
+    //check for required vars
+    var csvInvalid = false;
+    _.each($scope.selectedAction.vars,function(fieldVar){
+      if((fieldVar.csv && $scope.executeSelectedRadio == 'selected' && fieldVar.val.split(',').length != $scope.assetsSelected.length) || (fieldVar.csv && $scope.executeSelectedRadio == 'all' && fieldVar.val.split(',').length != $scope.assets.length)){csvInvalid = true;}
+    })
+    if(csvInvalid){
+      $scope.message('error-true','CSV field error',"Wrong amount of values in CSV field. Please make sure it matches the number of assets you're actioning");
+      return null;      
+    }
+
 
 
     //didnt want to search through all field names a lot, so we're searching for any used keywords
@@ -1000,7 +1016,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
             $scope.message('warning','Action Batch functions executed with '+ errorCount +' errors',results);  
           },          
           function(results){
-            $scope.message('error','Did not run due to a fatal error',results);  
+            $scope.message('error-true','Did not run due to a fatal error',results);  
           }
         );
         
@@ -1024,7 +1040,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
     if($scope.selectedAction.assetVarName != null){//if this is an action that can be executed on multiple assets
       var counter = 0;
 
-      _.each(assetIds,function(assetId){
+      _.each(assetIds,function(assetId, index){
         var newFunction = {
            "function":$scope.selectedAction.funcName,
            "args":{}
@@ -1041,7 +1057,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
           }
         }
 
-        $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId);
+        $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId,index);
 
         batchFunctionsToExecute[String(counter)] = newFunction;
         counter++;
@@ -1053,7 +1069,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
          "args":{}
       };
 
-      $scope.prepareActionBatchFunctionsSetVars(newFunction,null);
+      $scope.prepareActionBatchFunctionsSetVars(newFunction,null,index);
 
       batchFunctionsToExecute["0"] = newFunction;
     }
@@ -1062,7 +1078,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
 
 
-  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId) {
+  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId,index) {
 
         //we're only setting the vars that have set = true
         var setVars = _.where($scope.selectedAction.vars,{set:true});
@@ -1071,27 +1087,41 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
         _.each(setVars,function(variable){
 
           if(variable.set){//if set
-            //initialise to just val, might be overwritten
-            newFunction.args[variable.name] = variable.val;
 
-            //only if you get a text input
-            if((variable['type'] == 'string' || variable['type'] == 'integer') && variable.val.indexOf('%') != -1 && fieldKeywords.length && assetId != null){
-              //find any occurrances of the data field names in the 
-              //do keyword replacements
-              var asset = _.where($scope.assets,{"id":assetId})[0];
-              var stringVal = variable.val;
-              _.each(fieldKeywords,function(field){
-                stringVal = stringVal.replace('%'+field+'%',asset[field]);
-              });
-              //replace index if it's in there
-              stringVal = stringVal.replace('%index%',String(counter+1));
-              newFunction.args[variable.name] = stringVal;
-            }// end if string or integer
+              //initialise to just val, might be overwritten
+              newFunction.args[variable.name] = variable.val;
 
-            //if type
-            if(variable['type'] == 'select'){
-              newFunction.args[variable.name] = variable.val.id;
-            }
+              //only if you get a text input
+              if((variable['type'] == 'string' || variable['type'] == 'integer') && assetId != null){
+
+                if(!variable.csv){//if not csv
+
+                  var stringVal = variable.val;
+
+                  if(variable.val.indexOf('%') != -1 && fieldKeywords.length){
+                    //find any occurrances of the data field names in the 
+                    //do keyword replacements
+                    var asset = _.where($scope.assets,{"id":assetId})[0];
+                    _.each(fieldKeywords,function(field){
+                      stringVal = stringVal.replace('%'+field+'%',asset[field]);
+                    });
+                    //replace index if it's in there
+                    stringVal = stringVal.replace('%index%',String(counter+1));
+                  }//end check %
+
+                  newFunction.args[variable.name] = stringVal;
+
+                }else{
+                  //CSV CSV CSV CSV CSV CSV CSV CSV 
+                  //TODO - maybe improve this so it's not splitting every time
+                  var csvValues = variable.val.split(',');
+                  newFunction.args[variable.name] = csvValues[index];
+                }
+
+              }else if(variable['type'] == 'select'){
+                newFunction.args[variable.name] = variable.val.id;
+              }
+
           }//end if set
 
           //if var is required by js api then, set to nothing
@@ -1155,12 +1185,12 @@ $scope.getCSV = function(){
     if($scope.assetsSelected.length){
       assets = $scope.assetsSelected;
     }else{
-      $scope.message('error',"No assets selected","Please select some assets in the table first");
+      $scope.message('error-true',"No assets selected","Please select some assets in the table first");
       return null;
     }
 
     if(!$scope.fieldsDisplay.length){
-      $scope.message('error',"No fields selected","Please select a field from the display fields list on the right");
+      $scope.message('error-true',"No fields selected","Please select a field from the display fields list on the right");
       return null;
     }
     
@@ -1291,7 +1321,7 @@ $scope.createAssets = function(){
           $scope.getData(resultIds);
         }
       // }else{
-      //   $scope.message('error','Error Creating Assets',results);
+      //   $scope.message('error-true','Error Creating Assets',results);
       // }
     });
   }//end batch functions test
@@ -1325,7 +1355,7 @@ $scope.makeCreateAssetsBatchFunctions = function(){
           batchFunctions[String(n)] = newFunction;
         };
       }else{
-        $scope.message('error','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
+        $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
       }// end if names.length
 
     }else{
