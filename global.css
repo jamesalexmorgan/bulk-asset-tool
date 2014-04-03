@@ -11,7 +11,7 @@
   padding:0 10px 10px 0;
 }
 
-.action-fields th.field{width:100px;}
+.action-fields th.field{max-width:100px;}
 .action-fields th.value{width:110px;}
 
 .animate-if.ng-enter, .animate-if.ng-leave {
@@ -31,8 +31,8 @@
 
 /* animate everything */
 *{
-  -webkit-transition: all 1s;
-  transition: all 1s;
+  -webkit-transition: all 0.7s;
+  transition: all 0.7s;
 }
 
 .showing-true{opacity:1;}
@@ -58,7 +58,10 @@
   width: 187px;
 }
 
-  #rhc #search input{
+  #rhc .form-group{margin-bottom: 10px;}
+
+  #rhc #search input,
+  #rhc #search select{
     width: 150px;
   }
 
@@ -83,8 +86,11 @@
   }        
 
     #asset-table tr th{position:relative;}        
+    #asset-table tr td label{font-weight:normal;}        
 
-    #asset-table tr th.select{width:30px;text-align: center;}        
+    #asset-table tr th.select{width:30px;text-align: center;}
+    #asset-table tr th.table-column-type-icon{width:27px;}
+    #asset-table tr th.table-column-status-icon{width:22px;}
     #asset-table tr th.table-column-id{width:60px;}        
     #asset-table tr th.remove{width:60px;}        
     #asset-table tr td.select{text-align: center;}        
@@ -132,7 +138,7 @@
     opacity:0;
     z-index:1;
   }
-  #footer-panel .footer-panel-content.active{
+  #footer-panel .footer-panel-content.active-true{
     opacity:1;
     z-index:2;
   }
@@ -145,18 +151,54 @@
     text-align: center;
     font-size: 21px;
     border-right: 1px solid #777;
+    cursor:pointer;
   }
-  #footer-panel .footer-tab-button:hover{cursor:pointer;background: #eee;}
-  #footer-panel .footer-tab-button.active{background: #eee;}
+  #footer-panel .footer-tab-button:hover,
+  #footer-panel .footer-tab-button.active-true{background: #eee;}
 
+  #footer-panel .footer-panel-content .inner-tab-buttons{
+    width: 100px;
+    position: absolute;
+    top: 20px;
+    left: 25px;
+  }
 
+    #footer-panel .footer-panel-content .inner-tab-buttons .footer-inner-tab-button{
+      background: #999;
+      padding: 5px 10px;
+      text-align: center;
+      font-size: 17px;
+      border-bottom: #555 solid 1px;
+      cursor:pointer;
+    }
+    #footer-panel .footer-panel-content .inner-tab-buttons .footer-inner-tab-button:hover,
+    #footer-panel .footer-panel-content .inner-tab-buttons .footer-inner-tab-button.active-true{background: #ddd;}
+
+  #footer-panel .footer-panel-content .inner-tab-contents{
+    position: absolute;
+    left: 125px;
+    width: 710px;
+    height: 340px;
+  }
+
+  #footer-panel .footer-panel-content .inner-tab-contents .inner-tab-content{
+    background: #ddd;
+    padding: 15px 20px; 
+    position:absolute;
+    top:0px;
+    left:0px;
+    opacity:0;
+    z-index:1;
+    width: 700px;
+    height: 430px;    
+  }
+  #footer-panel .footer-panel-content .inner-tab-contents .inner-tab-content.active-true{
+    opacity:1;
+    z-index:2;
+  }
 /********************** Individual tabs **************************/
 
-#tab-2-content #asset-ids{height: 320px;}
-#tab-2-content #type-codes-selected{height: 220px;}
-
-#tab-3-content #message{height: 310px;}
-     #tab-3-content #csv-divider{width:50px;}
+#tab-3-content #csv-divider{width:50px;}
 
 
 
