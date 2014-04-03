@@ -4,47 +4,52 @@
       <div id="search" class="form-inline">
         <h4>Search <span class="showing-{{search != ''}}">({{searchedAssets.length}} items)</span></h4>
         <div class="form-group">
-          <input class="form-control" type="text" ng-model="search" ng-change="searchChanged()" placeholder="search any field.."/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="search = ''">x</a> <br>
+          <input class="form-control" type="text" ng-model="searchTxt" ng-change="searchChanged()" />
+          <a href="#" class="btn btn-default btn-sm" ng-click="searchBtnClear()">x</a>
+        </div>
+        <div class="form-group">
+          <select class="form-control" ng-model="searchField" ng-change="searchFieldChanged()">
+            <option value="$">All fields</option>
+            <option ng-repeat="field in fields" value="{{field}}">{{field}}</option>
+          </select>
         </div>
       </div><!-- end #search -->
-
-      <br>
 
       <div id="sorting" class="form-inline">
         <h4>Sorting</h4>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[0]" ng-change="sort.changed(0)" ng-options="f for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[0]" ng-change="sort.changed(0)" ng-disabled="!sort.fields[0]"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(0)" ng-disabled="!sort.fields[0]">x</a> 
-        </div> <br>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[0]" ng-change="sort.changed(0)"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(0)" ng-disabled="sort.fields.length < 2">x</a> 
+        </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[1]" ng-change="sort.changed(1)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 1"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[1]" ng-change="sort.changed(1)" ng-disabled="sort.fields.length < 1 || !sort.fields[1]"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(1)" ng-disabled="sort.fields.length < 1 || !sort.fields[1]">x</a> 
-        </div> <br>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[1]" ng-change="sort.changed(1)" ng-disabled="sort.fields.length < 2"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(1)" ng-disabled="sort.fields.length < 2">x</a> 
+        </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[2]" ng-change="sort.changed(2)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 2"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[2]" ng-change="sort.changed(2)" ng-disabled="sort.fields.length < 2 || !sort.fields[2]"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(2)" ng-disabled="sort.fields.length < 2 || !sort.fields[2]">x</a> 
-        </div> <br>
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[2]" ng-change="sort.changed(2)" ng-disabled="sort.fields.length < 3"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(2)" ng-disabled="sort.fields.length < 3">x</a> 
+        </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[3]" ng-change="sort.changed(3)" ng-options="f for f in fields" ng-disabled="sort.fields.length < 3"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[3]" ng-change="sort.changed(3)" ng-disabled="sort.fields.length < 3 || !sort.fields[3]"/>
-          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(3)" ng-disabled="sort.fields.length < 3 || !sort.fields[3]">x</a> 
+          <input type="checkbox" title="Reverse" ng-model="sort.directions[3]" ng-change="sort.changed(3)" ng-disabled="sort.fields.length < 4"/>
+          <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(3)" ng-disabled="sort.fields.length < 4">x</a> 
         </div>
       </div><!-- end #sorting -->
 
-      <br>
+     
 
       <div id="display-fields">
         <h4>Display fields</h4>
-        <select class="form-control" id="displayFields" style="height:200px;" ng-model="fieldsDisplay" ng-options="f for f in fields" multiple="multiple"></select>
-        <br><br>
-        <input type="checkbox" ng-model="prettyDates"> Pretty dates <br>
-        <span class="showing-{{prettyDates}}" style="display:block;">Format <input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
-
-
+        <div class="form-group">
+          <select class="form-control" id="displayFields" style="height:200px;" ng-model="fieldsDisplay" ng-options="f for f in fields" multiple="multiple"></select>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" ng-model="prettyDates"> Format dates <br>
+          <span class="showing-{{prettyDates}}" style="display:block;"><input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
+        </div>
       </div><!-- end #display-fields -->
     </div><!-- end #rhc -->
 
@@ -68,14 +73,15 @@
                   <span class="bold">{{assets.length}} assets</span>
                 </div>
                 <div class="right">
-                  With selected (<span class="bold">{{assetsSelected.length}} assets</span>): <a href="#" ng-click="removeSelectedAssetsFromList()">Remove</a> | <a title="Reload data for selected assets" href="#" ng-click="refreshSelectedAssets()">Refresh</a>
+                  With selected (<span class="bold">{{assetsSelected.length}} assets</span>): <a href="#" ng-click="removeSelectedAssetsFromList()">Remove</a> | <a title="Reload data for selected assets" href="#" ng-click="refreshSelectedAssets()">Refresh</a> | <a title="Reverse selection in table" href="#" ng-click="reverseSelectedAssets()">Reverse</a>
                 </div>
               </div>
 
               <table id="asset-table" class="table table-bordered table-striped table-hover table-condensed">
                 <thead>
                   <th class="select"><input type="checkbox" ng-model="selectAll" ng-change="selectAllChanged()"></th>
-                  <th></th>
+                  <th class="table-column-type-icon"></th>
+                  <th class="table-column-status-icon"></th>
                   <th class="table-column-id sorting-{{(sort.fields.indexOf('id') != -1)}} sort-reverse-{{sort.directions[sort.fields.indexOf('id')]}}">
                     <a href="" title="Sort by id" ng-click="sort.newSortBy('id')">Id</a>
                     <div class="sort-triangle"></div>
@@ -94,6 +100,9 @@
                     <td>
                       <label for="asset-{{asset.id}}"><img width="16" height="16" class="sq-icon" title="{{asset.type_code}}" alt="" src="{{siteRoot}}/__data/asset_types/{{asset.type_code}}/icon.png"></label>
                     </td>
+                    <td>
+                      <label for="asset-{{asset.id}}"><img src="{{siteRoot}}/__lib/web/images/blank.gif" width="10" height="10" alt="{{asset.status}}" title="{{asset.status}}" align="absmiddle" style="border: 1px solid #ccc; background-color: #{{asset.status | statusColor}}"></label>
+                    </td>
                     <td class="id"><a title="Preview asset {{asset.id}} in new tab" href="{{asset.web_path}}" target="_blank">{{asset.id}}</a></td>
                     <td ng-repeat="fieldName in fieldsDisplay"> <label for="asset-{{asset.id}}">{{asset[fieldName] | prettifyDate:prettyDateFormat:prettyDates}}</label></td>
                     <td class="remove"><button type="button" class="btn btn-default btn-xs" title="Remove from list" ng-click="removeFromArray(assets,asset)">X</button></td>
@@ -101,7 +110,7 @@
                 </tbody>
               </table>
 
-              <p class="showing-{{(search != '' && searchedAssets.length == 0)}}"><span class="bold">HINT</span>: clear the search filter (there are still <span class="bold">{{assets.length}}</span> assets in the table)</p>
+              <p class="showing-{{(searchTxt != '' && searchedAssets.length == 0)}}"><span class="bold">HINT</span>: clear the search filter (there are still <span class="bold">{{assets.length}}</span> assets in the table)</p>
           </div>
 
 
@@ -122,97 +131,119 @@
 
     <div id="footer-panel" class="down-{{cpanel.showing}} selected-{{cpanel.tabSelected}}">
       <div id="slide-button" class="footer-tab-button" ng-click="cpanel.showHide()">^</div>
-      <div id="tab-1" class="footer-tab-button {{cpanel.tabStatuses[1]}}" ng-click="cpanel.changeTab(1)">Create</div>
-      <div id="tab-2" class="footer-tab-button {{cpanel.tabStatuses[2]}}" ng-click="cpanel.changeTab(2)">Load Assets</div>
-      <div id="tab-3" class="footer-tab-button {{cpanel.tabStatuses[3]}} showing-{{assets.length > 0}}" ng-click="cpanel.changeTab(3)">Reporting</div>
-      <div id="tab-4" class="footer-tab-button {{cpanel.tabStatuses[4]}} showing-{{assets.length > 0}}" ng-click="cpanel.changeTab(4)">Actions</div>
+      <div class="footer-tab-button active-{{cpanel.tabStatuses[1]}}" ng-click="cpanel.changeTab(1)">Create</div>
+      <div class="footer-tab-button active-{{cpanel.tabStatuses[2]}}" ng-click="cpanel.changeTab(2)">Load Assets</div>
+      <div class="footer-tab-button active-{{cpanel.tabStatuses[3]}}" ng-click="cpanel.changeTab(3)">Reporting</div>
+      <div class="footer-tab-button active-{{cpanel.tabStatuses[4]}}" ng-click="cpanel.changeTab(4)">Execute</div>
 
-      <div id="tab-1-content" class="footer-panel-content {{cpanel.tabStatuses[1]}}">
+      <div id="tab-1-content" class="footer-panel-content active-{{cpanel.tabStatuses[1]}}">
+          <div class="inner-tab-buttons">
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][1]}}" ng-click="cpanel.changeTab(1,1)">Bulk Create</div>
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][2]}}" ng-click="cpanel.changeTab(1,2)">IA Convert</div>
+          </div>
 
-          <form class="form-horizontal" role="form">
-            <div class="form-group">
-              <label class="col-sm-3 control-label" for="createTypeCodeSelected">Asset Type</label>
-              <div class="col-sm-6">
-                <select class="form-control" name="createTypeCodeSelected" ng-model="createTypeCodeSelected" ng-options="code.prettyName for code in loadAssetsTypeCodes | orderBy:'prettyName'"></select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-3 control-label" for="parentAssetId">Parent Asset Id</label>
-              <div class="col-sm-6">
-                <input class="form-control" name="parentAssetId" type="text" ng-model="parentAssetId" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-3 control-label">Create type</label>
-              <div class="col-sm-6">
-
-                <div class="radio">
-                  <label>
-                    <input type="radio" ng-model="createType" value="CSV" checked> CSV
-                  </label>
+          <div class="inner-tab-contents">
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[1][1]}}" >
+              <form class="form-horizontal" role="form">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="createTypeCodeSelected">Asset Type</label>
+                  <div class="col-sm-8">
+                    <select class="form-control" name="createTypeCodeSelected" ng-model="createTypeCodeSelected" ng-options="code.prettyName for code in loadAssetsTypeCodes | orderBy:'prettyName'"></select>
+                  </div>
                 </div>
-                <div class="radio">
-                  <label>
-                    <input type="radio" ng-model="createType" value="normal"> Normal
-                  </label>
-                </div>          
-              </div>
-            </div>            
-
-            <div class="showing-block-{{createType == 'normal'}}">
-              <div class="form-group">
-                <label class="col-sm-3 control-label" for="createNumberOfAssets">Number of assets to create</label>
-                <div class="col-sm-6">
-                  <input class="form-control" name="createNumberOfAssets" type="text" ng-model="createNumberOfAssets" />
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="parentAssetId">Parent Asset Id</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" name="parentAssetId" type="text" ng-model="parentAssetId" />
+                  </div>
                 </div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-3 control-label" for="createName">Asset name</label>
-                <div class="col-sm-6">
-                  <input class="form-control" name="createName" type="text" ng-model="createName" />
-                </div>
-              </div>
-            </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">Create type</label>
+                  <div class="col-sm-8">
 
-            <div class="showing-block-{{createType == 'CSV'}}">
-              <div class="form-group">
-                <label class="col-sm-3 control-label" for="createNameCSV">Names CSV <br><span class="showing-{{createNameCSV != ''}}">({{createNameCSV.split(',').length}} names)</span></label>
-                <div class="col-sm-6">
-                  <textarea class="form-control" name="createNameCSV" id="" rows="6" ng-model="createNameCSV" placeholder="E.g. Development types,Related links,Development categories,Exempt development,Complying development...."></textarea>
-                </div>
-              </div>
-            </div>
+                    <div class="radio">
+                      <label>
+                        <input type="radio" ng-model="createType" value="CSV" checked> CSV
+                      </label>
+                    </div>
+                    <div class="radio">
+                      <label>
+                        <input type="radio" ng-model="createType" value="normal"> Normal
+                      </label>
+                    </div>          
+                  </div>
+                </div>            
 
-            <div class="form-group">
-              <div class="col-sm-3 control-label">                
-              </div>
-              <div class="col-sm-6">
-                <button class="btn btn-primary btn-lg" ng-click="createAssets()">Create assets</button>  
-                <input type="checkbox" ng-model="createAssetsLoadAfter"> Load after created
-
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" ng-model="batchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
-                  </label>
+                <div class="showing-block-{{createType == 'normal'}}">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="createNumberOfAssets">Number of assets to create</label>
+                    <div class="col-sm-8">
+                      <input class="form-control" name="createNumberOfAssets" type="text" ng-model="createNumberOfAssets" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="createName">Asset name</label>
+                    <div class="col-sm-8">
+                      <input class="form-control" name="createName" type="text" ng-model="createName" />
+                    </div>
+                  </div>
                 </div>
 
+                <div class="showing-block-{{createType == 'CSV'}}">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="createNameCSV">Names CSV <br><span class="showing-{{createNameCSV != ''}}">({{createNameCSV.split(',').length}} names)</span></label>
+                    <div class="col-sm-8">
+                      <textarea class="form-control" name="createNameCSV" id="" rows="6" ng-model="createNameCSV" placeholder="E.g. Development types,Related links,Development categories,Exempt development,Complying development...."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="col-sm-3 control-label">                
+                  </div>
+                  <div class="col-sm-8">
+                    <button class="btn btn-primary btn-lg" ng-click="createAssets()">Create assets</button>  
+                    <input type="checkbox" ng-model="createAssetsLoadAfter"> Load after created
+
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" ng-model="createBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                      </label>
+                    </div>
+
+                  </div>
+                  
+                </div>
+              </form>
+            </div> <!-- end .inner-tab-content -->
+
+
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[1][2]}}">
+              <div class="col-sm-13">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="asset-ids">CSV</label>
+                    <textarea class="form-control" rows="10" ng-model="iaTxtCsv" placeholder="Client page structure CSV.... e.g. Home <br/> Test">
+                    </textarea>
+                  </div> 
+                  <button type="submit" ng-click="iaBtnConvert()" class="btn btn-primary btn-lg">Convert</button>
+                </form> 
               </div>
-              
             </div>
-          </form>
 
 
 
+          </div> <!-- end .inner-tabs -->
       </div>
 
-      <div id="tab-2-content" class="footer-panel-content {{cpanel.tabStatuses[2]}}">
+      <div id="tab-2-content" class="footer-panel-content active-{{cpanel.tabStatuses[2]}}">
 
         <div class="col-sm-7">
 
           <form role="form">
             <div class="form-group">
               <label for="asset-ids">Asset Ids</label>
-              <textarea id="asset-ids" class="form-control" rows="5" ng-model="loadAssetIdsString" placeholder="A csv of asset ids please... e.g. 34567,8765,73738,94949...."></textarea>
+              <textarea id="asset-ids" class="form-control" rows="13" ng-model="loadAssetIdsString" placeholder="A csv of asset ids please... e.g. 34567,8765,73738,94949...." ></textarea>
               <input type="checkbox" ng-model="loadAssetsCascade"> Cascade
               <span class="include-roots showing-{{loadAssetsCascade}}"><input type="checkbox" ng-model="loadAssetsIncludeRoots"> Include roots   <input type="checkbox" ng-model="loadAssetsTypeCodesEnabled"> Limit types</span>
             </div>
@@ -225,20 +256,20 @@
           <form class="showing-{{loadAssetsTypeCodesEnabled}} showing-{{loadAssetsCascade}}" role="form">
             <div class="form-group">
               <label for="loadAssetsTypeCodesSelected">Limited type codes:</label>
-              <select id="type-codes-selected" class="form-control" name="loadAssetsTypeCodesSelected" multiple="multiple" ng-model="loadAssetsTypeCodesSelected" ng-options="code.name for code in loadAssetsTypeCodes | orderBy:'name'"></select><br>
+              <select id="type-codes-selected" class="form-control" name="loadAssetsTypeCodesSelected" multiple="multiple" ng-model="loadAssetsTypeCodesSelected" ng-options="code.name for code in loadAssetsTypeCodes | orderBy:'name'" size="15"></select><br>
               <span class="bold" ng-repeat="code in loadAssetsTypeCodesSelected">{{code.name}}, </span>
             </div>
           </form>  
         </div>        
       </div>
 
-      <div id="tab-3-content" class="footer-panel-content {{cpanel.tabStatuses[3]}} showing-{{assets.length > 0}}">
+      <div id="tab-3-content" class="footer-panel-content active-{{cpanel.tabStatuses[3]}}">
 
         <div class="col-sm-12">
           <form role="form">
             <div id="message" class="form-group has-{{messageType}}">
               <label class="control-label" for="message">{{messageTitle}}</label>
-              <textarea type="text" class="form-control" id="message">{{messageContent | prettifyJson}}</textarea>
+              <textarea type="text" class="form-control" id="message" rows="13">{{messageContent | prettifyJson}}</textarea>
             </div>
           </form>
         </div>
@@ -279,78 +310,135 @@
 
       </div>    
 
-      <div id="tab-4-content" class="footer-panel-content {{cpanel.tabStatuses[4]}} showing-{{assets.length > 0}}">
-        
-        <div class="col-sm-3">
+      <!-- *************************** TAB 4 -->
 
-          <form role="form">
-            <div class="form-group">
-              <label for="selectedAction">Action</label>
-              <select class="form-control" name="selectedAction" ng-model="selectedAction" ng-options="action.name for action in actionsList | orderBy:'name' | filter:{disabled:false}" ng-disabled="action.disabled"></select>
-              <br>
-            </div>
 
-            <div class="disabled-{{selectedAction.assetVarName == null}}">
-              <div class="radio">
-                <label>
-                  <input type="radio" ng-model="executeSelectedRadio" value="selected" ng-disabled="selectedAction.assetVarName == null"> <span class="bold">Selected</span> assets only (<span class="bold">{{assetsSelected.length}}</span> assets)
-                </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" ng-model="executeSelectedRadio" value="all" ng-disabled="selectedAction.assetVarName == null"> <span class="bold">All</span> assets in table (<span class="bold">{{assets.length}}</span> assets)
-                </label>
-              </div>  
-            </div>
+      <div id="tab-4-content" class="footer-panel-content active-{{cpanel.tabStatuses[4]}}">
+          <div class="inner-tab-buttons">
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[4][1]}}" ng-click="cpanel.changeTab(4,1)">Action</div>
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[4][2]}}" ng-click="cpanel.changeTab(4,2)">Bulk CSV Change</div>
+          </div>
 
-            <button type="submit" class="btn btn-primary btn-lg" ng-click="executeActions()">Execute actions</button> 
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" ng-model="batchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
-              </label>
-            </div>
-            
-          </form>
-        </div>
+          <div class="inner-tab-contents">
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[4][1]}}" >        
+              <div class="col-sm-3">
 
-        <div class="col-sm-9 showing-{{selectedAction != null}}">
-            <table class="action-fields">
-              <thead>
-                <th class="field" title="Name of the field">Field</th>
-                <th class="set" title="Weather or not to set a value to this field, some fields are required to be set">Set</th>
-                <th class="set" title="Weather or not it is a CSV field. When checked, you must put in a CSV of values of the same quantity as there are assets being actioned">CSV</th>
-                <th class="value" title="The value that will be set to the field (single value/CSV)">Value</th>
-                <th class="desc" title="More info on this field">Description</th>
-              </thead>
-              <tr class="action-var data-from-{{var.dataFrom}}" ng-repeat="var in selectedAction.vars" title="">
-                <td title="{{var.name}}"><span class="required" ng-if="var.required">*</span>{{var.name}}</td>
-                <td title="Set value for {{var.name}}"><input type="checkbox" ng-model="var.set" ng-disabled="var.requiredSet"/></td>
-                <td title="Input type for {{var.name}}"><input type="checkbox" ng-model="var.csv" ng-disabled="(var.set && !(var.type == 'string' || var.type == 'integer'))"/></td>
-                <td>
-                  <div class="has-error-{{(var.required && var.val =='') || (var.csv && executeSelectedRadio == 'selected' && var.val.split(',').length != assetsSelected.length) || (var.csv && executeSelectedRadio == 'all' && var.val.split(',').length != assets.length)}}">
-                    <input class="form-control showing-block-{{(var.type == 'string' || var.type == 'integer' || var.type == 'json object' || var.type == 'array')}} " type="text" ng-model="var.val" placeholder="{{var.example}}" ng-disabled="!var.set"/>
+                <form role="form">
+                  <div class="form-group">
+                    <label for="selectedAction">Action</label>
+                    <select class="form-control" name="selectedAction" ng-model="selectedAction" ng-options="action.name for action in actionsList | orderBy:'name' | filter:{disabled:false}" ng-disabled="action.disabled"></select>
+                    <br>
                   </div>
-                  <select class="form-control showing-block-{{var.type == 'boolean'}}" type="checkbox" ng-model="var.val" ng-disabled="!var.set">
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
-                  </select>
-                  <select class="form-control showing-block-{{var.type == 'select'}}" ng-model="var.val" ng-options="option.name for option in var.ops" ng-disabled="!var.set"></select>
-                </td>
-                <td title="{{var.note}}">
-                  (<span class="bold">{{var.type}}</span>) {{var.note | limitTo:70}}<span class="showing-inline-{{var.note.length > 70}}">...</span> <span class="bold showing-{{var.csv}}">({{var.val.split(',').length}} values)</span>
-                </td>
-              </tr>
-            </table>
 
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" ng-model="selectedAction.blocking"> Blocking
-              </label>
+                  <div class="disabled-{{selectedAction.assetVarName == null}}">
+                    <div class="radio">
+                      <label>
+                        <input type="radio" ng-model="executeSelectedRadio" value="selected" ng-disabled="selectedAction.assetVarName == null"> <span class="bold">Selected</span> assets only <br/>
+                        (<span class="bold">{{assetsSelected.length}}</span> assets)
+                      </label>
+                    </div>
+                    <div class="radio">
+                      <label>
+                        <input type="radio" ng-model="executeSelectedRadio" value="all" ng-disabled="selectedAction.assetVarName == null"> <span class="bold">All</span> assets in table  <br/>
+                        (<span class="bold">{{assets.length}}</span> assets)
+                      </label>
+                    </div>  
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" ng-click="executeActions()">Execute actions</button> 
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="actionsBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                    </label>
+                  </div>
+                  
+                </form>
+              </div>
+
+              <div class="col-sm-9 showing-{{selectedAction != null}}">
+                  <table class="action-fields">
+                    <thead>
+                      <th class="field" title="Name of the field">Field</th>
+                      <th class="set" title="Weather or not to set a value to this field, some fields are required to be set">Set</th>
+                      <th class="set" title="Weather or not it is a CSV field. When checked, you must put in a CSV of values of the same quantity as there are assets being actioned">CSV</th>
+                      <th class="value" title="The value that will be set to the field (single value/CSV)">Value</th>
+                      <th class="desc" title="More info on this field">Description</th>
+                    </thead>
+                    <tr class="action-var data-from-{{var.dataFrom}}" ng-repeat="var in selectedAction.vars" title="">
+                      <td title="{{var.name}}"><span class="required" ng-if="var.required">*</span>{{var.name}}</td>
+                      <td title="Set value for {{var.name}}"><input type="checkbox" ng-model="var.set" ng-disabled="var.requiredSet"/></td>
+                      <td title="Input type for {{var.name}}"><input type="checkbox" ng-model="var.csv" ng-disabled="(selectedAction.assetVarName == null || !var.set || (var.type != 'string' && var.type != 'integer'))"/></td>
+                      <td>
+                        <div class="has-error-{{(var.required && var.val =='') || (var.csv && executeSelectedRadio == 'selected' && var.val.split(',').length != assetsSelected.length) || (var.csv && executeSelectedRadio == 'all' && var.val.split(',').length != assets.length)}}">
+                          <input class="form-control showing-block-{{(var.type == 'string' || var.type == 'integer' || var.type == 'json object' || var.type == 'array')}} " type="text" ng-model="var.val" placeholder="{{var.example}}" ng-disabled="!var.set"/>
+                        </div>
+                        <select class="form-control showing-block-{{var.type == 'boolean'}}" type="checkbox" ng-model="var.val" ng-disabled="!var.set">
+                          <option value="0">No</option>
+                          <option value="1">Yes</option>
+                        </select>
+                        <select class="form-control showing-block-{{var.type == 'select'}}" ng-model="var.val" ng-options="option.name for option in var.ops" ng-disabled="!var.set"></select>
+                      </td>
+                      <td title="{{var.note}}">
+                        (<span class="bold">{{var.type}}</span>) {{var.note | limitTo:70}}<span class="showing-inline-{{var.note.length > 70}}">...</span> <span class="bold showing-{{var.csv}}">({{var.val.split(',').length}} values)</span>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="selectedAction.blocking"> Blocking
+                    </label>
+                  </div>
+                
+              </div>
+
+            </div><!-- end inner tab 1 -->
+
+
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[4][2]}}" >
+              <div class="col-sm-6">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="asset-ids">CSV</label>
+                    <textarea class="form-control" rows="10" ng-model="csvChangeTxtCsv" ng-change="csvChangeChangesChecked = false" placeholder="Please enter your CSV of all the data you would like saved">
+                    </textarea>
+                  </div> 
+                  <button type="submit" ng-click="csvChangeBtnCheckForChanges()" class="btn btn-default">Check for changes</button>&nbsp;
+                  <span class="showing-{{csvChangeAssetsLoaded}}" title="Reload data from Matrix for all the CSVs asset ids"><input type="checkbox" ng-model="bulkCsvReload"> Reload</span>
+                  <br>
+                  <div class="showing-{{csvChangeChanges.length > 0}}">
+                    <button type="submit" ng-click="csvChangeBtnExecuteChanges()" class="btn btn-primary btn-lg" ng-disabled="!csvChangeChangesChecked">Make changes</button> 
+                    <input type="checkbox" ng-model="csvChangeChkBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+
+                  </div>
+                </form> 
+              </div>
+              <div class="col-sm-6 showing-{{csvChangeChanges.length > 0}}">
+                <p class="bold">Changes to be made...</p>
+                <table style="width:100%;">
+                  <thead>
+                    <tr>
+                      <th>Asset</th>
+                      <th>Field</th>
+                      <th>From</th>
+                      <th>To</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="change in csvChangeChanges">
+                      <td>{{change.id}}</td>
+                      <td>{{change.field}}</td>
+                      <td>"{{change.from}}"</td>
+                      <td>"{{change.to}}"</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          
-        </div>
 
-      </div>
+          </div><!-- end tab contents -->
+
+      </div> <!-- end tab 4 -->
 
     </div><!-- end #footer panel -->
 
@@ -378,7 +466,7 @@
 userVarSortDefaultsArray = ['-id'];
 userVarSortDefaults = ['id'];
 userVarSortDefaultsDirections = [true];// false = regular, true = reversed
-userVarFieldsDisplayDefaults = ['name','status','created','created_username'];
+userVarFieldsDisplayDefaults = ['name','created','created_username'];
 userVarPrettyDateFormat = "dd MMM 'yy hh:mmtt";
 userVarTypeCodesDefaults = ['page_standard','page_asset_listing','file','image','folder','form'];
 userVarMetadataPrefix = '(Meta) ';
@@ -394,6 +482,45 @@ function getObjectLength(batchFunctions) {
   } 
   return length; 
 }
+
+function convertCsvToArray(csv){
+  var array = [];
+  var rows = csv.split('\n');//split csv up into rows
+  _.each(rows,function(rowStr){
+    var rowArray = [];
+    var row = rowStr.replace(/^\s+|\s+$/g,'');
+    if(row != ''){
+      rowArray = rowStr.split(',');
+      array.push(rowArray);
+    }
+  });
+  return array;  
+}
+
+function checkValidCsv(csv,errorCallback,successCallback){
+  var errors = '';
+  var csvArray = convertCsvToArray(csv);
+  var rowStrings = csv.split('\n');//split csv up into rows
+  var topRowLength = 0;
+
+  if(!csvArray[0]){errors += 'Nothing in csv\n'; errorCallback(errors);}
+
+  topRowLength = csvArray[0].length;
+  
+  _.each(csvArray,function(row,$index){
+    if(row.length != topRowLength) errors += 'Row ' + ($index+1) + ' has ' + row.length + ' items:           ' + rowStrings[$index] + '\n';
+  });
+
+  if(errors != ''){errors = 'Each row should have ' + topRowLength + ' items\n\n' + errors;}
+
+
+  if(errors != ''){
+    errorCallback(errors);
+  }else{
+    successCallback();
+  }
+};
+
 
 /* 
 
@@ -447,6 +574,7 @@ bulkAssetApp.filter('prettifyJson', function() {
   };
 });
 
+
 bulkAssetApp.filter('prettifyDate', function() {
   return function(string,format,enabled) {
     if(enabled){
@@ -485,7 +613,11 @@ bulkAssetApp.filter('idsString', function() {
   };
 });
 
-
+bulkAssetApp.filter('statusColor', function() {
+  return function(statusName) {
+    return _.where(assetStatuses,{name:statusName})[0].color;
+  };
+});
 
 
 /*bulkAssetApp.factory('jspAPIService', function($http) {
@@ -581,11 +713,20 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       _.each($scope.assetsSelected,function(asset){
         assetsSelectedIds.push(asset.id);
       });
-      $scope.getData(assetsSelectedIds);
+      $scope.getData({"assetIds":assetsSelectedIds});
     }else{
       $scope.message('error-true','No assets selected',"Please select some assets in the table to refresh.");
     }
   }
+
+  $scope.reverseSelectedAssets = function() {
+    if($scope.assetsSelected.length){
+      _.each($scope.assets,function(asset){
+        asset.selected = !asset.selected;
+      });
+      $scope.selectChanged();
+    }
+  }  
 
   $scope.selectAll = false;
   $scope.selectAllChanged = function() {
@@ -626,16 +767,27 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
   $scope.cpanel = {
     "showing":true,
-    "tabStatuses":['ignore','','active','',''],
-    "changeTab":function(tab){
-
-      for(var t=1;t<this.tabStatuses.length;t++){
-        if(t == tab){
-          this.tabStatuses[t] = 'active';
-        }else{
-          this.tabStatuses[t] = '';
-        }
+    "tabStatuses":['',false,false,false,true],//ignore the '', its there to have the indexes as 1234 instead of 0123
+    "innerTabStatuses":['',
+      ['',false,true],//tab 1
+      ['',true,false],//tab 2
+      ['',true,false],//tab 3
+      ['',false,true]//tab 4
+    ],
+    "changeTab":function(tab,innerTab){
+      for(var t=1;t<this.tabStatuses.length;t++){//disable all top level tabs
+        this.tabStatuses[t] = false;
       }
+      this.tabStatuses[tab] = true; //enable selected tab
+
+      if(innerTab){//if value is set for inner tab
+        for(var i=1;i<this.innerTabStatuses[tab].length;i++){ //disable
+          this.innerTabStatuses[tab][i] = false;
+        }
+        this.innerTabStatuses[tab][innerTab] = true;
+      }
+
+      this.showing = true;
     },
     "showHide":function(){this.showing = !this.showing}
   }
@@ -646,12 +798,35 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
 /************************  1.3.1 Search  *************************/
 
-  $scope.search = '';
+  $scope.searchTxt = '';
+  $scope.search = {};
+
+  $scope.searchField = '$';
   $scope.searchedAssets = '';
 
+  $scope.searchBtnClear = function(){
+    $scope.searchTxt = '';
+    $scope.searchChanged();
+  }
+
   $scope.searchChanged = function(){
+    $scope.search[$scope.searchField] = $scope.searchTxt;
     $scope.searchedAssets = $filter('filter')($scope.assets,$scope.search);
   }
+  $scope.searchFieldChanged = function(){
+    $scope.searchClear();
+    $scope.searchChanged();
+  }
+
+  $scope.searchClear = function(){
+    //remove all search attributes
+    for(var key in $scope.search){
+      if($scope.search.hasOwnProperty(key)){
+        delete($scope.search[key]);
+      }
+    }
+  }  
+
 
 /*********************  1.3.2 Display Fields *********************/
 
@@ -711,7 +886,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 
     $scope.loadType = 'ids';
-    $scope.loadAssetIdsString = "907,110,911";
+    $scope.loadAssetIdsString = "72";
     $scope.loadAssetIds = [];
     $scope.loadAssetsCascade = true;
     $scope.loadAssetsIncludeRoots = false;
@@ -728,12 +903,12 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
     $scope.loadAssetsGetMetadata = true;
 
-    $scope.getData = function(assetIds){
+    $scope.getData = function(params){
       //there is the option to pass in an array of ids, useful for other functions that need to load assets
       $scope.loadingStart('Loading assets...');
 
-      if(assetIds){
-        $scope.loadAssetIds = assetIds;
+      if(params && params.assetIds){
+        $scope.loadAssetIds = params.assetIds;
       }else{
         //get an array of all the ids
         $scope.loadAssetIds = $scope.loadAssetIdsString.split(',');
@@ -742,7 +917,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
       $scope.preparedAssetIds = [];
 
       //if cascade is set AND input assetIds is not set
-      if($scope.loadAssetsCascade && !assetIds){
+      if($scope.loadAssetsCascade && !(params && params.assetIds)){
 
         //get all children 
         $scope.gatheredResults = [];
@@ -764,12 +939,12 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
         jspAPIService.executeBatch(batchFunctionsChildren,function(results){
           //put children assets in resultAssets array
           _.each(results,function(result){
-            if(result.length){
-              _.each(result,function(asset){
-                $scope.resultAssets.push(asset);
-                $scope.preparedAssetIds.push(asset.id);
-              });
-            }
+              if(result.length){
+                _.each(result,function(asset){
+                  $scope.resultAssets.push(asset);
+                  $scope.preparedAssetIds.push(asset.id);
+                });
+              }
           }); //end each gatheredResults
 
           if($scope.loadAssetsIncludeRoots){//if include roots is checked
@@ -785,13 +960,13 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
               //finished getting general data
               $scope.loadAssetDataSet($scope.resultAssets,'');
-              $scope.getDataStepTwo();
+              $scope.getDataStepTwo(params);
             });
           }else{
             //finished getting general data
             if($scope.resultAssets.length){//sometimes has no children
               $scope.loadAssetDataSet($scope.resultAssets,'');
-              $scope.getDataStepTwo();
+              $scope.getDataStepTwo(params);
             }else{
               $scope.loading = false;
               $scope.message('error-true','No assets to load','Sorry, none of these assets had any children of the type codes specified.');
@@ -809,30 +984,32 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
         //get general
         jspAPIService.executeBatch(batchFunctionsGeneral,function(results){
           $scope.loadAssetDataSet(results,'');
-          $scope.getDataStepTwo();
+          $scope.getDataStepTwo(params);
         });
       }//end if cascade
 
     }
 
     //this step loads metadata
-    $scope.getDataStepTwo = function(){
+    $scope.getDataStepTwo = function(params){
       if($scope.loadAssetsGetMetadata){
         //get all ids first
         var batchFunctionsMeta = $scope.makeBatchFunctions("getMetadata",{},$scope.preparedAssetIds);
         //get metadata
         jspAPIService.executeBatch(batchFunctionsMeta,function(results){
           $scope.loadAssetDataSet(results,userVarMetadataPrefix);
-          $scope.getDataStepThree();
+          $scope.getDataStepThree(params);
         });
       }else{
-        $scope.getDataStepThree();
+        $scope.getDataStepThree(params);
       }
     }
 
-    $scope.getDataStepThree = function(){
+    $scope.getDataStepThree = function(params){
       //FINISHED GETTING DATA
-      
+      if(params && params.callBack){
+        params.callBack();
+      }
     };
 
 
@@ -917,16 +1094,16 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 /*****************************************************************/
 /*****************************************************************/
 /*****************************************************************/
-/*************************  3. Actions  **************************/
+/*************************  3. Execute  **************************/
 /*****************************************************************/
 /*****************************************************************/
 /*****************************************************************/
 
 
 /*****************************************************************/
-/**************************  3.1 Vars  ***************************/
+/**************************  3.1 Actions  ***************************/
 /*****************************************************************/
-  $scope.batchFunctionsTest = true;
+  $scope.actionsBatchFunctionsTest = true;
   $scope.actionsList = matrixActionsList;
 
   $scope.selectedAction = _.where($scope.actionsList,{funcName:"setMetadata"})[0]; // most common function
@@ -934,9 +1111,6 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
   $scope.batchFunctions = [];
 
-/*****************************************************************/
-/***********************  3.2 Functions  ************************/
-/*****************************************************************/
 
   $scope.executeActions = function(){
     var assetsActioning = [];
@@ -1000,7 +1174,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
     var batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetsActioningIds,fieldKeywords);
 
-    if($scope.batchFunctionsTest){
+    if($scope.actionsBatchFunctionsTest){
       $scope.message('','Your batch of functions',batchFunctionsActionsExecute);  
     }else{
       $scope.loadingStart('Executing ' + $scope.selectedAction.name + '...');
@@ -1023,7 +1197,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
         //if it was a group asset function
         if($scope.selectedAction.assetVarName){
           $scope.loadingStart('Reloading actioned assets...');
-          $scope.getData(assetsActioningIds);
+          $scope.getData({"assetIds":assetsActioningIds});
         }
 
       });
@@ -1131,6 +1305,162 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
         });  
   }// end set vars
+
+
+/*****************************************************************/
+/********************  3.2 Bulk CSV change  *********************/
+/*****************************************************************/
+
+$scope.csvChangeChangesChecked = false;
+
+$scope.csvChangeChkBatchFunctionsTest = true;
+$scope.csvChangeAssetsLoaded = false;
+$scope.csvChangeReload = false;
+
+$scope.csvChangeAssets = [];
+$scope.csvChangeChanges = [];
+$scope.csvChangeIds = [];
+$scope.csvChangeTxtCsv = 'id,name,125\n1455,Employee 1,Test Note 1\n1459,Employee 2,\n1463,Employee 3,\n1467,Employee 4,\n1471,Employee 5,\n1475,Employee 6,Test Note 6\n1479,Person 7,\n1483,Person 8,\n1487,Employee 9,Test Note 9\n1491,Employee 10,';
+
+$scope.csvChangeBtnCheckForChanges = function(){
+  $scope.csvChangeChanges = [];
+
+  checkValidCsv($scope.csvChangeTxtCsv,
+    function(errors){
+      $scope.message('error-true','CSV invalid',errors);
+    },function(){
+      $scope.csvChangeAssets = $scope.convertChangesCsvToAssetArray($scope.csvChangeTxtCsv);
+      //get ids and load data so we can compare
+      var ids = [];
+      _.each($scope.csvChangeAssets,function(csvAsset){
+        ids.push(csvAsset.id);
+      });
+
+
+      if($scope.csvChangeReload || !$scope.csvChangeAssetsLoaded){
+        //TODO check for new assets
+
+        $scope.getData({"assetIds":ids,callBack:function(){
+          //TO DO must check for erroneous assets see if assets in 
+          //non existent ids eg
+          //$scope.message('error-true',"Some assets couldn't be compared...",unloadedAssets);
+
+          //DISALLOW next step so that
+
+          //some assets have been loaded, now we can reload if needed
+          $scope.csvChangeAssetsLoaded = true;
+
+          $scope.csvChangeBtnCheckForChangesStep2();
+        }});
+      }else{
+        $scope.csvChangeBtnCheckForChangesStep2();
+      }
+    }
+  );//end csv check
+};
+
+$scope.csvChangeBtnCheckForChangesStep2 = function(){
+    //now we can compare
+    _.each($scope.csvChangeAssets,function(csvAsset){//go through each asset
+      var originalAsset = _.where($scope.assets,{id:Number(csvAsset.id)})[0];
+      for(var key in csvAsset){//go through each att
+        if(csvAsset.hasOwnProperty(key)){
+          var newChange = {
+            "id":csvAsset.id,
+            "field":key,
+            "to":csvAsset[key],
+            "from":''
+          };
+
+          if(String(newChange.field).match(/^-?\d+\.?\d*$/) != null){//check if it's a number
+            newChange.isMetadata = true;
+            //get display field
+            //var field = _.where($scope.fields,{id:key});
+
+            //var field = originalAsset[];
+            newChange.from = "";
+          }else{
+            newChange.isMetadata = false;
+            
+            if(originalAsset.hasOwnProperty(key)) newChange.from = originalAsset[key];
+
+          }
+
+          if(String(newChange.from) != String(newChange.to)){
+            $scope.csvChangeChanges.push(newChange);
+            $scope.csvChangeIds.push(newChange.id);
+          }
+        }
+      }
+    });
+
+    $scope.csvChangeChangesChecked = true;
+}
+
+
+
+$scope.convertChangesCsvToAssetArray = function(csv){
+  var assetsArray = [];
+  var csvArray = convertCsvToArray(csv);
+  var assetRows = csvArray.splice(1,csvArray.length-1);//will leave csvArray with the first row and assetRows with the rest
+  var fields = csvArray[0]; //the one item left in csvArray is the fields array
+
+  _.each(assetRows,function(assetRow){
+    var newAsset = {};
+
+    _.each(fields,function(field,$index){
+      newAsset[field] = assetRow[$index];
+    })
+    assetsArray.push(newAsset);
+  });
+
+  return assetsArray;
+};
+
+
+$scope.csvChangeBtnExecuteChanges = function(){
+  var csvChangeBatchFunctions = $scope.csvChangeMakeBatchFunctions();
+
+  if($scope.csvChangeChkBatchFunctionsTest){
+    $scope.message('','Your batch of functions',csvChangeBatchFunctions);  
+  }else{
+    $scope.loadingStart('Making changes...');
+    jspAPIService.executeBatch(csvChangeBatchFunctions,function(results){
+      $scope.getData({"assetIds":$scope.csvChangeIds,callBack:function(){
+        $scope.message('success','Changes made',results);
+      }});
+    });
+  }
+};
+
+$scope.csvChangeMakeBatchFunctions = function(){
+  var csvBatchFunctions = {};
+  _.each($scope.csvChangeChanges,function(change,$index){
+
+    var newFunction = {
+      "args":{
+        "asset_id":change.id
+      },
+      "blocking":0
+    };
+
+    if(change.isMetadata){
+      newFunction["function"] = 'setMetadata';
+      newFunction.args.field_id = change.field;
+      newFunction.args.field_val = change.to;
+    }else{
+      newFunction["function"] = 'setAttribute';
+      newFunction.args.attr_name = change.field;
+      newFunction.args.attr_val = change.to;
+    }    
+
+    csvBatchFunctions[String($index)] = newFunction;
+
+  });
+
+  return csvBatchFunctions;
+
+}
 
       
 /*****************************************************************/
@@ -1290,16 +1620,16 @@ $scope.createNumberOfAssets = 1;
 $scope.createName = 'Asset %index%';
 $scope.createTypeCodeSelected = _.where($scope.loadAssetsTypeCodes,{name:'page_standard'})[0];
 $scope.createAssetsLoadAfter = true;
-
+$scope.createBatchFunctionsTest = true;
 /*****************************************************************/
-/************************  5.1 Message  *************************/
+/************************  5.1 Bulk Create  *************************/
 /*****************************************************************/
 
 $scope.createAssets = function(){
 
   var batchFunctionsCreateAssets = $scope.makeCreateAssetsBatchFunctions();
 
-  if($scope.batchFunctionsTest){
+  if($scope.createBatchFunctionsTest){
     $scope.message('','Your batch of functions',batchFunctionsCreateAssets);  
   }else{
 
@@ -1318,7 +1648,7 @@ $scope.createAssets = function(){
         });
 
         if($scope.createAssetsLoadAfter){ 
-          $scope.getData(resultIds);
+          $scope.getData({"assetIds":resultIds});
         }
       // }else{
       //   $scope.message('error-true','Error Creating Assets',results);
@@ -1333,62 +1663,81 @@ $scope.makeCreateAssetsBatchFunctions = function(){
     //builds the batch functions object depending on what you pass in
     var batchFunctions = {};
 
-    if($scope.createType == 'CSV'){
-      // IF type CSV
-      var names = $scope.createNameCSV.split(',');
+    var names = $scope.createNameCSV.split(',');
 
-      if(names.length){
-        for(var n = 0;n < names.length;n++){
-          var parent_id = $scope.parentAssetId;
-          var type_code = $scope.createTypeCodeSelected.name;
-          var asset_name = names[n];
-          var newFunction = {
-            "function":'createAsset',
-            "args":{
-              "parent_id":parent_id,
-              "type_code":type_code,
-              "asset_name":asset_name
-            },
-            "blocking":0
-          };
+    if(names.length){
+      for(var n = 0;n < names.length;n++){
+        var parent_id = $scope.parentAssetId;
+        var type_code = $scope.createTypeCodeSelected.name;
+        var asset_name = null;
+        if($scope.createType == 'CSV'){asset_name = names[n]}
+        if($scope.createType == 'normal'){asset_name = $scope.createName.replace('%index%',String(c+1))}
 
-          batchFunctions[String(n)] = newFunction;
+        var newFunction = {
+          "function":'createAsset',
+          "args":{
+            "parent_id":parent_id,
+            "type_code":type_code,
+            "asset_name":asset_name
+          },
+          "blocking":0
         };
-      }else{
-        $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
-      }// end if names.length
 
-    }else{
-      //IF 'normal'
-      for(var c =0;c < $scope.createNumberOfAssets;c++){
-          var parent_id = $scope.parentAssetId;
-          var type_code = $scope.createTypeCodeSelected.name;
-          var asset_name = $scope.createName.replace('%index%',String(c+1));
-          var newFunction = {
-            "function":'createAsset',
-            "args":{
-              "parent_id":parent_id,
-              "type_code":type_code,
-              "asset_name":asset_name
-            },
-            "blocking":0
-          };
-
-        batchFunctions[String(c)] = newFunction;
+        batchFunctions[String(n)] = newFunction;
       };
-
-
-    }
-
-
+    }else{
+      $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
+    }// end if names.length
 
     return batchFunctions;
 }
 
 
+/*****************************************************************/
+/************************  5.2 IA Convert  *************************/
+/*****************************************************************/
 
+$scope.iaTxtCsv = 'Home\nAbout Us\nContact\nContact,Where We Are\nContact,Opening Hours,Sydney\nContact,Opening Hours,Melbourne\nAbout Us,Location\nNames,George';
 
+$scope.iaPreparedHTML = '';
 
+$scope.iaBtnConvert = function(){
+  var headingsObject = {};
+  var rows = $scope.iaTxtCsv.split('\n');
+
+  $scope.iaPreparedHTML = '';
+
+  _.each(rows,function(rowStr){
+    var row = rowStr.replace(/^\s+|\s+$/g,'');
+    if(row != ''){
+      $scope.iaLoadRow(row,headingsObject);
+    }
+  });
+
+  $scope.iaObjToHtml(headingsObject,1);
+
+  $scope.message('success',"Here's your site structure creation HTML...",$scope.iaPreparedHTML);
+};
+
+$scope.iaLoadRow = function(rowString,headingsObject){
+  var pages = rowString.split(','); //Contact,Opening Hours,Sydney
+  var checkPointer = headingsObject;
+  _.each(pages,function(pageStr,$index){
+    if(!checkPointer.hasOwnProperty(pageStr)) checkPointer[pageStr] = {};
+    checkPointer = checkPointer[pageStr]
+  });
+}
+
+$scope.iaObjToHtml = function(obj,level){
+  for (var key in obj) {
+     if (obj.hasOwnProperty(key)){
+        for(var t = 1;t<level;t++){$scope.iaPreparedHTML += '\t'}
+        $scope.iaPreparedHTML += ('<h'+level+'>' + key.replace(/^\s+|\s+$/g,'') + '</h'+level+'>');
+        $scope.iaPreparedHTML += '\n';
+        $scope.iaObjToHtml(obj[key],level+1);
+     }
+  }
+}
 
 
 }); //end ControllerMain
