@@ -202,7 +202,10 @@
 
 
 
+/********************** LOADING STATE **************************/
 
+
+.loading-true #overlay{display:block;}
 
 
 @font-face {
@@ -238,19 +241,7 @@
     to { -webkit-transform: rotate(360deg); }
 }
 
-.spinner {
-  position:absolute;
-  top:50%;
-  left:50%;
-  margin: -30px 0px 0px -30px;
-  font-size:4em;
-  height: 1em;
-  line-height: 1;
-  -moz-animation: rotate 1.5s linear 0s infinite;
-  -webkit-animation: rotate 1.5s linear 0 infinite;
-  color: #fff;
-  text-shadow: 0 0 .25em rgba(255,255,255, .3);
-}
+
 
 #overlay {
     width: 100%;
@@ -263,15 +254,104 @@
     z-index: 10;
 }
 
-#overlay .loading-text {
-color: #fff;
-position: absolute;
-top: 50%;
-left: 50%;
-margin-top: 60px;
+#overlay #loading-box {
+  width: 500px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-left:-250px;
+  color: #fff;
+  margin-top: -140px;
+}
+
+
+#overlay #loading-box .spinner {
+  position:absolute;
+  left: 50%;
+  margin: 0px 0px 0px -30px;
+  font-size:4em;
+  height: 1em;
+  line-height: 1;
+  -moz-animation: rotate 1.5s linear 0s infinite;
+  -webkit-animation: rotate 1.5s linear 0 infinite;
+  color: #fff;
+  text-shadow: 0 0 .25em rgba(255,255,255, .3);
+}
+
+#overlay #loading-box .loading-text {
+margin-top: 80px;
 font-size: 28px;
-margin-left: -240px;
-width: 480px;
 text-align: center;
 }
-.loading-true #overlay{display:block;}
+
+#overlay #loading-box #progress-bar1 {top:520px;}
+#overlay #loading-box #progress-bar2 {top:570px;}
+
+#overlay #loading-box .progress-bar {
+  text-align: left;
+  background-color: #1a1a1a;
+  height: 25px;
+  padding: 5px;
+  width: 100%;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -moz-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+  -webkit-box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+  box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;           
+}
+
+#overlay #loading-box .progress-bar span {
+    /*background-color: #34c2e3;  */
+    display: inline-block;
+    height: 100%;
+    background-color: #777;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+    -webkit-transition: width .4s ease-in-out;
+    -moz-transition: width .4s ease-in-out;
+    -ms-transition: width .4s ease-in-out;
+    -o-transition: width .4s ease-in-out;
+    transition: width .4s ease-in-out;    
+
+
+    -webkit-background-size: 30px 30px;
+    -moz-background-size: 30px 30px;
+    background-size: 30px 30px;     
+    background-image: -webkit-gradient(linear, left top, right bottom,
+    color-stop(.25, rgba(255, 255, 255, .15)), color-stop(.25, transparent),
+    color-stop(.5, transparent), color-stop(.5, rgba(255, 255, 255, .15)),
+    color-stop(.75, rgba(255, 255, 255, .15)), color-stop(.75, transparent),
+    to(transparent));
+    background-image: -webkit-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
+    background-image: -moz-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
+    background-image: -ms-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
+    background-image: -o-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);            
+
+    -webkit-animation: animate-stripes 3s linear infinite;
+    -moz-animation: animate-stripes 3s linear infinite;           
+}
+
+@-webkit-keyframes animate-stripes { 
+  0% {background-position: 60px 0;} 100% {background-position: 0 0;}
+}
+
+@-moz-keyframes animate-stripes {
+  0% {background-position: 60px 0;} 100% {background-position: 0 0;}
+}
+

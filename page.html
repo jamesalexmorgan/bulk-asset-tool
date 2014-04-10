@@ -44,12 +44,15 @@
       <div id="display-fields">
         <h4>Display fields</h4>
         <div class="form-group">
-          <select class="form-control" id="displayFields" style="height:200px;" ng-model="fieldsDisplay" ng-options="field | metadataFieldFormat for field in fields" multiple="multiple"></select>
+          <select class="form-control" size="10" ng-model="fieldsDisplay" ng-options="field | metadataFieldFormat for field in fields" multiple="multiple"></select>
         </div>
         <div class="form-group">
-          <input type="checkbox" ng-model="prettyDates"> Format dates <br>
+          <input type="checkbox" ng-model="prettyDates"> Format dates
           <span class="showing-{{prettyDates}}" style="display:block;"><input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
         </div>
+        <!--div class="form-group">
+          <select class="form-control" size="5" ng-model="fieldsDisplay" ng-options="field | metadataFieldFormat for field in fields" multiple="multiple"></select>
+        </div-->
       </div><!-- end #display-fields -->
     </div><!-- end #rhc -->
 
@@ -128,6 +131,7 @@
       <div class="footer-tab-button active-{{cpanel.tabStatuses[2]}}" ng-click="cpanel.changeTab(2)">Load Assets</div>
       <div class="footer-tab-button active-{{cpanel.tabStatuses[3]}}" ng-click="cpanel.changeTab(3)">Reporting</div>
       <div class="footer-tab-button active-{{cpanel.tabStatuses[4]}}" ng-click="cpanel.changeTab(4)">Execute</div>
+      <div class="footer-tab-button active-{{cpanel.tabStatuses[5]}}" ng-click="cpanel.changeTab(5)">Config</div>
 
       <div id="tab-1-content" class="footer-panel-content active-{{cpanel.tabStatuses[1]}}">
           <div class="inner-tab-buttons">
@@ -436,11 +440,42 @@
 
       </div> <!-- end tab 4 -->
 
+
+      <div id="tab-5-content" class="footer-panel-content active-{{cpanel.tabStatuses[5]}}">
+
+        <div class="col-sm-12">
+          <form role="form">
+            <div id="message" class="form-group has-{{messageType}}">
+              <label>
+                <input class="form-control" type="text" ng-model="chunkAmount"> <span class="bold">Chunk size</span> (How many functions will be executed at once)
+              </label>
+            </div>
+          </form>
+        </div>
+        
+      </div>    <!-- end tab 5 -->
+
+
     </div><!-- end #footer panel -->
 
+
+
 <div id="overlay">
+  <div id="loading-box">
     <div class="spinner loading-icon" aria-hidden="true"></div>
     <div class="loading-text">{{loadingText}}</div>
+    <p>&nbsp;</p>
+    <p class="loader-text showing-block-{{loaderOne.showing}}">{{loaderOne.text}}</p>
+    <div id="progress-bar1" class="progress-bar showing-block-{{loaderOne.showing}}">
+        <span style="width: {{loaderOne.progress}}%;"></span>
+    </div>
+    <p>&nbsp;</p>
+    <p class="loader-text showing-block-{{loaderTwo.showing}}">{{loaderTwo.text}}</p>
+    <div id="progress-bar2" class="progress-bar showing-block-{{loaderTwo.showing}}">
+        <span style="width: {{loaderTwo.progress}}%;"></span>
+    </div>
+  </div>
+
 </div>
 
 <!--     <div id="action-confirm-dialog">
@@ -468,7 +503,7 @@ userVarSiteRoot = 'http://syd-prodvm-matrix06.syd.squiz.net.au';
 
 function getObjectLength(batchFunctions) {
   var length=0;
-  for(c=0;c<20;c++) {
+  for(var c=0;c<10000000;c++) {
      if(typeof batchFunctions[String(c)] != "undefined") {
         length = c+1;
      }
@@ -476,13 +511,13 @@ function getObjectLength(batchFunctions) {
   return length; 
 }
 
-function convertCsvToArray(csv){
+function convertCsvToArray(csv) {
   var array = [];
   var rows = csv.split('\n');//split csv up into rows
-  _.each(rows,function(rowStr){
+  _.each(rows,function(rowStr) {
     var rowArray = [];
     var row = rowStr.replace(/^\s+|\s+$/g,'');
-    if(row != ''){
+    if(row != '') {
       rowArray = rowStr.split(',');
       array.push(rowArray);
     }
@@ -490,34 +525,45 @@ function convertCsvToArray(csv){
   return array;  
 }
 
-function checkValidCsv(csv,errorCallback,successCallback){
+function checkValidCsv(csv,errorCallback,successCallback) {
   var errors = '';
   var csvArray = convertCsvToArray(csv);
   var rowStrings = csv.split('\n');//split csv up into rows
   var topRowLength = 0;
 
-  if(!csvArray[0]){errors += 'Nothing in csv\n'; errorCallback(errors);}
+  if(!csvArray[0]) {errors += 'Nothing in csv\n'; errorCallback(errors);}
 
   topRowLength = csvArray[0].length;
   
-  _.each(csvArray,function(row,$index){
+  _.each(csvArray,function(row,$index) {
     if(row.length != topRowLength) errors += 'Row ' + ($index+1) + ' has ' + row.length + ' items:           ' + rowStrings[$index] + '\n';
   });
 
-  if(errors != ''){errors = 'Each row should have ' + topRowLength + ' items\n\n' + errors;}
+  if(errors != '') {errors = 'Each row should have ' + topRowLength + ' items\n\n' + errors;}
 
 
-  if(errors != ''){
+  if(errors != '') {
     errorCallback(errors);
   }else{
     successCallback();
   }
 };
 
-function prettifyName(string){
+function prettifyName(string) {
   var newString = string.replace('_',' ');
   newString = newString.charAt(0).toUpperCase() + newString.slice(1);
   return newString;
+}
+
+function divideArray(array,divideAmount) {
+  var newArray = _.clone(array);
+  var arrayOfArrays = [];
+  var len = Number(divideAmount);
+  for(var a = 0;newArray.length > len;a++) {//while assetIds is more than chunk size, keep splicing
+    arrayOfArrays.push(newArray.splice(0,len));
+  }
+  if(newArray.length) {arrayOfArrays.push(newArray);}//if theres any left in assetIds, push that also
+  return arrayOfArrays;
 }
 
 /* 
@@ -543,7 +589,7 @@ var bulkAssetApp = angular.module('bulkAssetApp', []);
 
 bulkAssetApp.filter('prettifyJson', function() {
   return function(input) {
-    if(typeof input == 'string'){
+    if(typeof input == 'string') {
       return input;
     }else{
       return JSON.stringify(input, null, '\t');  
@@ -555,16 +601,16 @@ bulkAssetApp.filter('prettifyJson', function() {
 
 bulkAssetApp.filter('prettifyDate', function() {
   return function(string,format,enabled) {
-    if(enabled){
+    if(enabled) {
       //if unix date then, make a pretty version as well
-      if(String(string).match(/\d{10}/) != null){ //if 10 digit
+      if(String(string).match(/\d{10}/) != null) { //if 10 digit
           var date = new Date('01/01/1970');
           date.addSeconds(string);
           return date.toString(format);
       }
       //if parseable as another date 
       var date = new Date(string);
-      if(date.toString() != 'Invalid Date'){
+      if(date.toString() != 'Invalid Date') {
         return date.toString(format);
       }
 
@@ -580,11 +626,11 @@ bulkAssetApp.filter('prettifyDate', function() {
 bulkAssetApp.filter('idsString', function() {
   return function(assets) {
     var ids = [];
-    _.each(assets,function(asset){
+    _.each(assets,function(asset) {
       ids.push(asset.id);
     });
     var idString = ids.toString();
-    if(idString == ''){
+    if(idString == '') {
       idString = 'None selected';
     }
     return idString;
@@ -598,9 +644,9 @@ bulkAssetApp.filter('statusColor', function() {
 });
 
 bulkAssetApp.filter('metadataFieldFormat', function() {
-  return function(field){
-    if(field.isMetadata){
-      if(field.meta_id){
+  return function(field) {
+    if(field.isMetadata) {
+      if(field.meta_id) {
         return '(#' + field.meta_id + ') ' + field.id;
       }else{
         return '(#???) ' + field.id + ' (Deleted?)'; //very unlikely, assets, still have field.meta_id
@@ -622,12 +668,12 @@ bulkAssetApp.factory('jspAPIService', function($q) {
 
     jsAPI.batchRequest({
        "functions":batchFunctions,
-       "dataCallback":function(result){
+       "dataCallback":function(result) {
           defer.resolve(result);          
        }
-    }); 
+    });
 
-    defer.promise.then(function(results){
+    defer.promise.then(function(results) {
       callback(results);
     });
   };
@@ -2912,9 +2958,49 @@ $scope.actionsList = [
 ];
 
 
-    $scope.removeFromArray = function(array,item){
+/********************  Global functions  *********************/
+
+
+    $scope.removeFromArray = function(array,item) {
       var index = array.indexOf(item)
       array.splice(index, 1);
+    }
+
+
+
+    $scope.executeBatchFunctions = function(batchFunctionsChunked,callBack) {
+      var allResults = [];//concat all chunks' results to this array to diplay after
+      var noOfChunks = batchFunctionsChunked.length;
+      var functions = [];
+
+      var totalBatchFunctions = 0;// just need the total number for loader 
+      _.each(batchFunctionsChunked,function(batch){
+        totalBatchFunctions += Object.keys(batch).length;
+      });
+      var totalExecuted = 0;
+
+      for (c in batchFunctionsChunked){
+        if(batchFunctionsChunked.hasOwnProperty(c)){
+
+          var newFunction = function(position) {
+              jspAPIService.executeBatch(batchFunctionsChunked[position],function(results) {
+                allResults = allResults.concat(results);//add results to array
+                if(position == noOfChunks - 1) {
+                  callBack(allResults);//finished, do call back
+                }else{
+                  functions[position+1](position+1);// call next function
+                }
+                totalExecuted += Object.keys(batchFunctionsChunked[position]).length;
+                $scope.loaderUpdate($scope.loaderTwo,totalBatchFunctions,totalExecuted)
+              });
+          }//end newFunction object
+          
+
+          functions.push(newFunction);
+        }
+      }
+
+      functions[0](0);//start executing
     }
 
 
@@ -2935,13 +3021,23 @@ $scope.actionsList = [
 
   $scope.loading = false;
   $scope.loadingText = '';
-  $scope.loadingStart = function(text){
+
+  $scope.loaderOne = {showing:false,text:'',progress:100};
+  $scope.loaderTwo = {showing:true,text:'',progress:100};
+
+  $scope.loadingStart = function(text) {//number of processes is usually 2/3/4, setMetadata, getGeneral, getMetadata,
     $scope.loading = true;
-    if(text){
+    if(text) {
       $scope.loadingText = text;
     }else{
       $scope.loadingText = 'Loading...';
     }
+    $scope.loaderTwo.progress = 0;     
+  }
+
+  $scope.loaderUpdate = function(loader,total,current) {
+    loader.progress = (current/total) * 100;
+    loader.text = current + " of " + total;
   }
 
   $scope.assets = [];
@@ -2958,9 +3054,9 @@ $scope.actionsList = [
 
   $scope.refreshSelectedAssets = function() {
     //if there are selected assets then, reload their data
-    if($scope.assetsSelected.length){
+    if($scope.assetsSelected.length) {
       var assetsSelectedIds = [];
-      _.each($scope.assetsSelected,function(asset){
+      _.each($scope.assetsSelected,function(asset) {
         assetsSelectedIds.push(asset.id);
       });
       $scope.getData({"assetIds":assetsSelectedIds});
@@ -2970,8 +3066,8 @@ $scope.actionsList = [
   }
 
   $scope.reverseSelectedAssets = function() {
-    if($scope.assetsSelected.length){
-      _.each($scope.assets,function(asset){
+    if($scope.assetsSelected.length) {
+      _.each($scope.assets,function(asset) {
         asset.selected = !asset.selected;
       });
       $scope.selectChanged();
@@ -2981,7 +3077,7 @@ $scope.actionsList = [
   $scope.selectAll = false;
   $scope.selectAllChanged = function() {
     var assets = null;
-    if($scope.search != ''){
+    if($scope.searchTxt != '') {
       assets = $scope.searchedAssets;
     }else{
       assets = $scope.assets;
@@ -2996,7 +3092,7 @@ $scope.actionsList = [
     $scope.assetsSelected = _.filter($scope.assets,function(asset) {
       return asset.selected == true;
     });
-    if($scope.cpanel.tabStatuses[3] == 'active'){
+    if($scope.cpanel.tabStatuses[3] == 'active') {
       $scope.csvSelectedRadio = 'selected';
     }
     $scope.executeSelectedRadio = 'selected';
@@ -3017,21 +3113,22 @@ $scope.actionsList = [
 
   $scope.cpanel = {
     "showing":true,
-    "tabStatuses":['',false,true,false,false],//ignore the '', its there to have the indexes as 1234 instead of 0123
+    "tabStatuses":['',false,true,false,false,false],//ignore the '', its there to have the indexes as 1234 instead of 0123
     "innerTabStatuses":['',
       ['',false,true],//tab 1
       ['',true,false],//tab 2
       ['',true,false],//tab 3
       ['',false,true]//tab 4
+      ['',false,true]//tab 5
     ],
-    "changeTab":function(tab,innerTab){
-      for(var t=1;t<this.tabStatuses.length;t++){//disable all top level tabs
+    "changeTab":function(tab,innerTab) {
+      for(var t=1;t<this.tabStatuses.length;t++) {//disable all top level tabs
         this.tabStatuses[t] = false;
       }
       this.tabStatuses[tab] = true; //enable selected tab
 
-      if(innerTab){//if value is set for inner tab
-        for(var i=1;i<this.innerTabStatuses[tab].length;i++){ //disable
+      if(innerTab) {//if value is set for inner tab
+        for(var i=1;i<this.innerTabStatuses[tab].length;i++) { //disable
           this.innerTabStatuses[tab][i] = false;
         }
         this.innerTabStatuses[tab][innerTab] = true;
@@ -3039,7 +3136,7 @@ $scope.actionsList = [
 
       this.showing = true;
     },
-    "showHide":function(){this.showing = !this.showing}
+    "showHide":function() {this.showing = !this.showing}
   }
 
 /*****************************************************************/
@@ -3054,24 +3151,24 @@ $scope.actionsList = [
   $scope.searchField = '$';
   $scope.searchedAssets = '';
 
-  $scope.searchBtnClear = function(){
+  $scope.searchBtnClear = function() {
     $scope.searchTxt = '';
     $scope.searchChanged();
   }
 
-  $scope.searchChanged = function(){
+  $scope.searchChanged = function() {
     $scope.search[$scope.searchField] = $scope.searchTxt;
     $scope.searchedAssets = $filter('filter')($scope.assets,$scope.search);
   }
-  $scope.searchFieldChanged = function(){
+  $scope.searchFieldChanged = function() {
     $scope.searchClear();
     $scope.searchChanged();
   }
 
-  $scope.searchClear = function(){
+  $scope.searchClear = function() {
     //remove all search attributes
-    for(var key in $scope.search){
-      if($scope.search.hasOwnProperty(key)){
+    for(var key in $scope.search) {
+      if($scope.search.hasOwnProperty(key)) {
         delete($scope.search[key]);
       }
     }
@@ -3094,9 +3191,9 @@ $scope.actionsList = [
     fields:[$scope.fields[0]], //array of field objects          initialized later
     directions:[true], //e.g. [false,true,false]
     reverse:false,
-    newSortBy:function(field){
+    newSortBy:function(field) {
       //for when column name is clicked
-      if(this.fields.length == 1 && this.fields[0] == field){//if already sorting by only this field then reverse
+      if(this.fields.length == 1 && this.fields[0] == field) {//if already sorting by only this field then reverse
         this.directions[0] = !this.directions[0];
         this.changed(0);
       }else{
@@ -3106,16 +3203,16 @@ $scope.actionsList = [
         this.changed(0);
       }
     },
-    changed:function(index){
+    changed:function(index) {
       //new
-      if(typeof this.directions[index] == 'undefined'){this.directions[index] = false;}
+      if(typeof this.directions[index] == 'undefined') {this.directions[index] = false;}
       var arraySortString = '';
-      if(this.directions[index]){arraySortString += '-'}//if true then give it a - to reverse it
+      if(this.directions[index]) {arraySortString += '-'}//if true then give it a - to reverse it
       arraySortString += this.fields[index].id;//have now made the sort string e.g. "-id"
 
       this.array[index] = arraySortString;
     },
-    remove:function(index){
+    remove:function(index) {
       this.array.splice(index,1);
       this.fields.splice(index,1);
       this.directions.splice(index,1);
@@ -3140,16 +3237,20 @@ $scope.actionsList = [
 /*****************************************************************/
 
     $scope.loadType = 'ids';
-    $scope.loadAssetIdsString = "72";
+    $scope.loadAssetIdsString = "1491,1487,1483,1479,1475,1471,1467,1463,1459,1455,1448,1306,109";
     $scope.loadAssetIds = [];
-    $scope.loadAssetsCascade = true;
+
+    $scope.loadAssetStepOneResultAssets = [];
+    $scope.loadAssetStepTwoIds = []; //this will be loaded with the children of the step one if cascade is selected otherwise just the roots
+
+    $scope.loadAssetsCascade = false;
     $scope.loadAssetsIncludeRoots = false;
     $scope.loadAssetsTypeCodesEnabled = true;
     $scope.loadAssetsTypeCodesSelected = [];
 
     //load default type codes into selected
-    _.each(userVarTypeCodesDefaults,function(def){
-      var typeCode = _.find($scope.loadAssetsTypeCodes,function(code){
+    _.each(userVarTypeCodesDefaults,function(def) {
+      var typeCode = _.find($scope.loadAssetsTypeCodes,function(code) {
         return code.id == def;
       });
       if(typeCode) $scope.loadAssetsTypeCodesSelected.push(typeCode);
@@ -3157,72 +3258,77 @@ $scope.actionsList = [
 
     $scope.loadAssetsGetMetadata = true;
 
-    $scope.getData = function(params){
+    $scope.getData = function(params) {
       //there is the option to pass in an array of ids, useful for other functions that need to load assets
-      $scope.loadingStart('Loading assets...');
-
-      if(params && params.assetIds){
+      if(params && params.assetIds) {
         $scope.loadAssetIds = params.assetIds;
       }else{
         //get an array of all the ids
         $scope.loadAssetIds = $scope.loadAssetIdsString.split(',');
       }
       
-      $scope.preparedAssetIds = [];
+
+      //TODO find out how many different actions there are 
+      /*
+      - get Children
+      - get General
+      - get Metadata
+      */
 
       /*********************** CASCADE **************************/
 
       //if cascade is set AND input assetIds is not set
-      if($scope.loadAssetsCascade && !(params && params.assetIds)){
-
+      if($scope.loadAssetsCascade && !(params && params.assetIds)) {
         //get all children 
         $scope.gatheredResults = [];
         $scope.getChildrenFunctions = [];
-        $scope.resultAssets = [];
-
+        
 
         var batchFunctionsChildrenAtts = {"get_attributes":1,"levels":0};
         //if user has selected any type codes set them in the batch
-        if($scope.loadAssetsTypeCodesEnabled && $scope.loadAssetsTypeCodesSelected.length){
+        if($scope.loadAssetsTypeCodesEnabled && $scope.loadAssetsTypeCodesSelected.length) {
           var typeCodes = [];
-          _.each($scope.loadAssetsTypeCodesSelected,function(typeCode){
+          _.each($scope.loadAssetsTypeCodesSelected,function(typeCode) {
             typeCodes.push(typeCode.id);
           });
           batchFunctionsChildrenAtts.type_codes = typeCodes;
         }
         
         var batchFunctionsChildren = $scope.makeBatchFunctions("getChildren",batchFunctionsChildrenAtts,$scope.loadAssetIds);
-        jspAPIService.executeBatch(batchFunctionsChildren,function(results){
+
+        $scope.loadingStart('Getting children...');
+        $scope.executeBatchFunctions(batchFunctionsChildren,function(results) {
           //put children assets in resultAssets array
-          _.each(results,function(result){
-              if(result.length){
-                _.each(result,function(asset){
-                  $scope.resultAssets.push(asset);
-                  $scope.preparedAssetIds.push(asset.id);
+          _.each(results,function(result) {
+              if(result.length) {
+                _.each(result,function(asset) {
+                  $scope.loadAssetStepOneResultAssets.push(asset);
+                  $scope.loadAssetStepTwoIds.push(asset.id);
                 });
               }
           }); //end each gatheredResults
 
-          if($scope.loadAssetsIncludeRoots){//if include roots is checked
+          if($scope.loadAssetsIncludeRoots) {//if include roots is checked
             // execute getGeneral info on these ids
             var batchFunctionsGeneralRootNodes = $scope.makeBatchFunctions("getGeneral",{"get_attributes":1},$scope.loadAssetIds);
             //get general 
-            jspAPIService.executeBatch(batchFunctionsGeneralRootNodes,function(results){
+            $scope.loadingStart('Getting general info...');
+            $scope.executeBatchFunctions(batchFunctionsGeneralRootNodes,function(results) {
               //put root node assets in resultAssets array
-              _.each(results,function(asset){
-                $scope.resultAssets.push(asset);
-                $scope.preparedAssetIds.push(asset.id);
+              _.each(results,function(asset) {
+                $scope.loadAssetStepOneResultAssets.push(asset);
+                $scope.loadAssetStepTwoIds.push(asset.id);
               });
 
               //finished getting general data
-              $scope.loadAssetDataSet($scope.resultAssets,'');
-              $scope.getDataStepTwo(params);
+              $scope.loadAssetDataSet($scope.loadAssetStepOneResultAssets,'');
+              $scope.getDataStepTwo();
             });
           }else{
             //finished getting general data
-            if($scope.resultAssets.length){//sometimes has no children
-              $scope.loadAssetDataSet($scope.resultAssets,'');
-              $scope.getDataStepTwo(params);
+            if($scope.loadAssetStepOneResultAssets.length) {//sometimes has no children
+              $scope.loadAssetDataSet($scope.loadAssetStepOneResultAssets,'');
+              $scope.getDataStepTwo();
             }else{
               $scope.loading = false;
               $scope.message('error-true','No assets to load','Sorry, none of these assets had any children of the type codes specified.');
@@ -3230,32 +3336,39 @@ $scope.actionsList = [
           }          
 
 
-        });//end jspAPIService.executeBatch
+        });//end $scope.executeBatchFunctions
 
       }else{ //else cascade
 
       /*********************** NO CASCADE **************************/
 
         //then just these assets
-        $scope.preparedAssetIds = $scope.loadAssetIds;// prepared asset ids is used in loadAssetDataSet()
+        $scope.loadAssetStepTwoIds = $scope.loadAssetIds;// if no cascadinfg then step 2 only needs these root nodes
         
         var batchFunctionsGeneral = $scope.makeBatchFunctions("getGeneral",{"get_attributes":1},$scope.loadAssetIds);
         //get general
-        jspAPIService.executeBatch(batchFunctionsGeneral,function(results){
-          $scope.loadAssetDataSet(results,'');
-          $scope.getDataStepTwo(params);
+        $scope.loadingStart('Getting general info...');
+        $scope.executeBatchFunctions(batchFunctionsGeneral,function(results) {
+          $scope.loadAssetStepOneResultAssets = results;
+          $scope.loadAssetDataSet($scope.loadAssetStepOneResultAssets,'');
+          if(params){
+            $scope.getDataStepTwo(params);
+          }else{
+            $scope.getDataStepTwo();
+          }
         });
       }//end if cascade
 
     }
 
     //this step loads metadata
-    $scope.getDataStepTwo = function(params){
-      if($scope.loadAssetsGetMetadata){
+    $scope.getDataStepTwo = function(params) {
+      if($scope.loadAssetsGetMetadata) {
         //get all ids first
-        var batchFunctionsMeta = $scope.makeBatchFunctions("getMetadata",{},$scope.preparedAssetIds);
+        var batchFunctionsMeta = $scope.makeBatchFunctions("getMetadata",{},$scope.loadAssetStepTwoIds);
         //get metadata
-        jspAPIService.executeBatch(batchFunctionsMeta,function(results){
+        $scope.loadingStart('Getting metadata...');
+        $scope.executeBatchFunctions(batchFunctionsMeta,function(results) {
           $scope.loadAssetDataSet(results,true);
           $scope.getDataStepThree(params);
         });
@@ -3264,28 +3377,42 @@ $scope.actionsList = [
       }
     }
 
-    $scope.getDataStepThree = function(params){
+    $scope.getDataStepThree = function(params) {
       //FINISHED GETTING DATA
-      $scope.getMetadataFields(function(){
+      $scope.getMetadataFields(function() {
         $scope.getDataStepFour(params);
       });
     };
 
-    $scope.getDataStepFour = function(params){
+    $scope.getDataStepFour = function(params) {
       //FINISHED GETTING DATA
       $scope.loading = false;
 
-      if(params && params.callBack){
+      if(params && params.callBack) {
         params.callBack();
       }
     };
 
 
-    $scope.makeBatchFunctions = function(funcName,attributes,assetIds){
+    $scope.makeBatchFunctions = function(funcName,attributes,assetIds) {
+
+      var arrayOfArraysIds = divideArray(assetIds,$scope.chunkAmount);
+      var arrayOfArraysBatches = [];
+      _.each(arrayOfArraysIds,function(idsArray) {
+        arrayOfArraysBatches.push($scope.makeBatchFunctionsChunk(funcName,attributes,idsArray));
+      })
+
+      return arrayOfArraysBatches;
+    }
+
+
+
+    $scope.makeBatchFunctionsChunk = function(funcName,attributes,assetIds) {
+
         //builds the batch functions object depending on what you pass in
         var batchFunctions = {};
         var counter = 0;
-        _.each(assetIds,function(assetId){
+        _.each(assetIds,function(assetId) {
           var newFunction = {
             "function":funcName,
             "args":{
@@ -3302,25 +3429,25 @@ $scope.actionsList = [
         return batchFunctions;
     }
 
-/*    $scope.runGetDataBatchFunctions = function(batchFunctions,prefix,callBack){
+/*    $scope.runGetDataBatchFunctions = function(batchFunctions,prefix,callBack) {
         //run set of prepared "get data" batch functions
 
 
     }*/
 
-    $scope.loadAssetDataSet = function(dataSet,isMetadata){
+    $scope.loadAssetDataSet = function(dataSet,isMetadata) {
 
       //loads gathered dataset into the assets table
-      _.each(dataSet,function(assetData,$index){
-        if(!assetData.error){// check for error
-          var id = $scope.preparedAssetIds[$index]; //get id from prepared asset ids
+      _.each(dataSet,function(assetData,$index) {
+        if(!assetData.error) {// check for error
+          var id = $scope.loadAssetStepTwoIds[$index]; //get id from prepared asset ids
 
           //find seems a bit processor heavy but is needed for additional asset data loading
-          var asset = _.find($scope.assets,function(asset){
+          var asset = _.find($scope.assets,function(asset) {
             return (String(asset.id) == String(id));
           });
 
-          if(asset){
+          if(asset) {
             $scope.loadAssetFields(asset,assetData,isMetadata); //transfer all data to asset in table
           }else{
             var newAsset = {};
@@ -3334,14 +3461,14 @@ $scope.actionsList = [
     }
 
 
-    $scope.loadAssetFields = function(asset,assetData,isMetadata){
+    $scope.loadAssetFields = function(asset,assetData,isMetadata) {
 
       for(var attId in assetData) {
-        if(assetData.hasOwnProperty(attId)){
+        if(assetData.hasOwnProperty(attId)) {
 
-          if(typeof asset[attId] == 'undefined' || String(asset[attId]) != String(assetData[attId]) ){
+          if(typeof asset[attId] == 'undefined' || String(asset[attId]) != String(assetData[attId]) ) {
             //if it is a number save into assets as a number (so you can order properly by it)
-            if(String(assetData[attId]).match(/^-?\d+\.?\d*$/) != null){
+            if(String(assetData[attId]).match(/^-?\d+\.?\d*$/) != null) {
               asset[attId] = Number(assetData[attId]);
             }else{
               asset[attId] = assetData[attId];
@@ -3349,18 +3476,18 @@ $scope.actionsList = [
           }
 
           //add it to the fields selector if not there already
-          if(!_.where($scope.fields,{"id":attId}).length){
+          if(!_.where($scope.fields,{"id":attId}).length) {
             var newField = {"id":attId,"name":prettifyName(attId)};
             //default display fields
-            if(userVarFieldsDisplayDefaults.indexOf(attId) != -1){$scope.fieldsDisplay.push(newField);}
-            if(isMetadata){newField.isMetadata = true}else{newField.isMetadata = false}//will need that for the displaying the field names later
+            if(userVarFieldsDisplayDefaults.indexOf(attId) != -1) {$scope.fieldsDisplay.push(newField);}
+            if(isMetadata) {newField.isMetadata = true}else{newField.isMetadata = false}//will need that for the displaying the field names later
             $scope.fields.push(newField);
           }
 
           //METADATA
-          if(isMetadata){
+          if(isMetadata) {
             //FOR METADATA SCHEMA GATHERING, get an asset id assigned to each metadata schema field
-            if(!$scope.getMetadataAssetIds[attId]){$scope.getMetadataAssetIds[attId] = asset['id'];}
+            if(!$scope.getMetadataAssetIds[attId]) {$scope.getMetadataAssetIds[attId] = asset['id'];}
           }
         }
       }// end for loop
@@ -3369,47 +3496,52 @@ $scope.actionsList = [
     //We don't want to execute getMetadataSchema on every asset in the table (request would take too long)
     //we just need to find a few assets in the table that, between them, cover all the metadata fields we need
     $scope.getMetadataAssetIds = {} //this is being populated when creating the fields, we're getting an asset id for each metadata schema field e.g. {"Global.Approver":1432,"Global.Role":94875,"Global.Publish.Date"}
-    $scope.getMetadataFields = function(callBack){
+    $scope.getMetadataFields = function(callBack) {
 
       var ids = [];
-      _.each($scope.getMetadataAssetIds,function(id){
-        if(ids.indexOf(id) == -1){ids.push(id)}
+      _.each($scope.getMetadataAssetIds,function(id) {
+        if(ids.indexOf(id) == -1) {ids.push(id)}
       })
 
       var getMetadataFieldsBatchFunctions = $scope.makeBatchFunctions("getMetadataSchema",{},ids);
 
       $scope.loadingStart('Getting metadata fields...');
 
-      jspAPIService.executeBatch(getMetadataFieldsBatchFunctions,function(results){
+      $scope.executeBatchFunctions(getMetadataFieldsBatchFunctions,function(results) {
         var allSchemas = {};
 
         //put all schemas into one object
-        _.each(results,function(result){
-          if(!result.error){
+        _.each(results,function(result) {
+          if(!result.error) {
             _.extend(allSchemas,result);
           }
         });
 
         //iterate through schemas
-        for(var key in allSchemas){
-          if(allSchemas.hasOwnProperty(key)){
+        for(var key in allSchemas) {
+          if(allSchemas.hasOwnProperty(key)) {
             var schema = allSchemas[key];
-            if(schema != []){//checking for empty schema (empty returns [])
+            if(schema != []) {//checking for empty schema (empty returns [])
               //iterate through schema fields
-              for(var key2 in schema){
-                if(schema.hasOwnProperty(key2)){
+              for(var key2 in schema) {
+                if(schema.hasOwnProperty(key2)) {
                   //give the real field in $scope.fields all this data
                   var field = schema[key2];
-                  var actualField = _.where($scope.fields,{id:field["name"]["value"]});
-                  if(actualField.length == 1){
-                    actualField[0].meta_id = key2;
-                    actualField[0].meta_friendly_name = field["friendly_name"]["value"];
-                    actualField[0].meta_description = field["description"]["value"];
-                    actualField[0].meta_editable = field["editable"]["value"];
-                    actualField[0].meta_required = field["required"]["value"];
+                  var fieldName = field["name"]["value"];
 
-                    $scope.fieldsMetadata.push(actualField[0]);
-                  }
+                  if(!_.where($scope.fieldsMetadata,{id:fieldName}).length){//if not already in meta fields
+
+                    var actualField = _.where($scope.fields,{id:fieldName});
+                    if(actualField.length == 1) {
+                      actualField[0].meta_id = key2;
+                      actualField[0].meta_friendly_name = field["friendly_name"]["value"];
+                      actualField[0].meta_description = field["description"]["value"];
+                      actualField[0].meta_editable = field["editable"]["value"];
+                      actualField[0].meta_required = field["required"]["value"];
+
+                      $scope.fieldsMetadata.push(actualField[0]);
+                    }
+                  }//end - if not already in meta fields
                 }
               }
 
@@ -3442,53 +3574,53 @@ $scope.actionsList = [
 
   $scope.batchFunctions = [];
 
-  $scope.selectedActionChanged = function(){
+  $scope.selectedActionChanged = function() {
     //initialise the select field vars
     var selectVars = _.where($scope.selectedAction.vars,{type:"select"});
-    if(selectVars.length){ //if there are any select vars
-      _.each(selectVars,function(variable,$index){
-        if(variable.ops.length && variable.val == null){ //if it has null then give it the first option
+    if(selectVars.length) { //if there are any select vars
+      _.each(selectVars,function(variable,$index) {
+        if(variable.ops.length && variable.val == null) { //if it has null then give it the first option
           variable.val = variable.ops[0][variable['opsKey']];
         }
       });
     }
   }
 
-  $scope.executeActions = function(){
+  $scope.executeActions = function() {
     var assetsActioning = [];
     var assetsActioningIds = [];
     //if radio is on selected then get just those
-    if($scope.executeSelectedRadio === 'selected'){
+    if($scope.executeSelectedRadio === 'selected') {
       assetsActioning = $filter('orderBy')($scope.assetsSelected,$scope.sort.array);
     }else{
       assetsActioning = $filter('orderBy')($scope.assets,$scope.sort.array)
     }
 
-    if($scope.selectedAction.assetVarName != null && assetsActioning.length == 0){
+    if($scope.selectedAction.assetVarName != null && assetsActioning.length == 0) {
       $scope.message('error-true','No assets selected','Please select some assets in the table above.');
       return null;
     }
-    if($scope.selectedAction == null){
+    if($scope.selectedAction == null) {
       $scope.message('error-true','No action selected','Please select an action from the dropdown on the left.');
       return null;
     }
 
     //check for required vars
     var missingField = false;
-    _.each($scope.selectedAction.vars,function(fieldVar){
-      if(fieldVar.required && fieldVar.val == ''){missingField = true;}
+    _.each($scope.selectedAction.vars,function(fieldVar) {
+      if(fieldVar.required && fieldVar.val == '') {missingField = true;}
     })
-    if(missingField){
+    if(missingField) {
       $scope.message('error-true','Required fields',"Please fill out all fields marked with a '*'");
       return null;
     }
 
     //check for required vars
     var csvInvalid = false;
-    _.each($scope.selectedAction.vars,function(fieldVar){
-      if((fieldVar.csv && $scope.executeSelectedRadio == 'selected' && fieldVar.val.split(',').length != $scope.assetsSelected.length) || (fieldVar.csv && $scope.executeSelectedRadio == 'all' && fieldVar.val.split(',').length != $scope.assets.length)){csvInvalid = true;}
+    _.each($scope.selectedAction.vars,function(fieldVar) {
+      if((fieldVar.csv && $scope.executeSelectedRadio == 'selected' && fieldVar.val.split(',').length != $scope.assetsSelected.length) || (fieldVar.csv && $scope.executeSelectedRadio == 'all' && fieldVar.val.split(',').length != $scope.assets.length)) {csvInvalid = true;}
     })
-    if(csvInvalid){
+    if(csvInvalid) {
       $scope.message('error-true','CSV field error',"Wrong amount of values in CSV field. Please make sure it matches the number of assets you're actioning");
       return null;      
     }
@@ -3497,47 +3629,47 @@ $scope.actionsList = [
 
     //didnt want to search through all field names a lot, so we're searching for any used keywords
     var valuesConcatenated = '';
-    _.each($scope.selectedAction.vars,function(fieldVar){
+    _.each($scope.selectedAction.vars,function(fieldVar) {
       valuesConcatenated += fieldVar.val + ' ';
     });
     var fieldKeywords = [];
-    if(valuesConcatenated.indexOf('%') != -1){
-      _.each($scope.fields,function(field){
-        if(valuesConcatenated.indexOf('%'+field+'%') != -1){
-          fieldKeywords.push(field);
+    if(valuesConcatenated.indexOf('%') != -1) {
+      _.each($scope.fields,function(field) {
+        if(valuesConcatenated.indexOf('%'+field.id+'%') != -1) {
+          fieldKeywords.push(field.id);
         }
       });
     }
 
     //get all assetsActioningIds from assetsActioning array
-    _.each(assetsActioning,function(asset){
+    _.each(assetsActioning,function(asset) {
       assetsActioningIds.push(asset.id);
     });
 
     var batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetsActioningIds,fieldKeywords);
 
-    if($scope.actionsBatchFunctionsTest){
+    if($scope.actionsBatchFunctionsTest) {
       $scope.message('','Your batch of functions',batchFunctionsActionsExecute);  
     }else{
       $scope.loadingStart('Executing ' + $scope.selectedAction.name + '...');
 
-      jspAPIService.executeBatch(batchFunctionsActionsExecute,function(results){
+      $scope.executeBatchFunctions(batchFunctionsActionsExecute,function(results) {
 
         $scope.errorCheckResults(
           results,
-          function(results){
+          function(results) {
             $scope.message('success','Action Batch functions executed on all assets',results);  
           },
-          function(results, errorCount){
+          function(results, errorCount) {
             $scope.message('warning','Action Batch functions executed with '+ errorCount +' errors',results);  
           },
-          function(results){
+          function(results) {
             $scope.message('error-true','Did not run due to an error',results);  
           }
         );
         
         //if it was a group asset function
-        if($scope.selectedAction.assetVarName){
+        if($scope.selectedAction.assetVarName) {
           $scope.loadingStart('Reloading actioned assets...');
           $scope.getData({"assetIds":assetsActioningIds});
         }
@@ -3549,77 +3681,90 @@ $scope.actionsList = [
   }
 
 
+$scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
 
-  $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
+  var arrayOfArraysIds = divideArray(assetIds,$scope.chunkAmount);
+  var arrayOfArraysBatches = [];
+  _.each(arrayOfArraysIds,function(idsArray) {
+    arrayOfArraysBatches.push($scope.prepareActionBatchFunctionsChunk(idsArray,fieldKeywords));
+  })
+
+  return arrayOfArraysBatches;
+}
+
+
+
+  $scope.prepareActionBatchFunctionsChunk = function(assetIds,fieldKeywords) {
     var batchFunctionsToExecute = {};
 
-    if($scope.selectedAction.assetVarName != null){//if this is an action that can be executed on multiple assets
+    if($scope.selectedAction.assetVarName != null) {//if this is an action that can be executed on multiple assets
       var counter = 0;
 
-      _.each(assetIds,function(assetId, index){
+      _.each(assetIds,function(assetId, index) {
         var newFunction = {
            "function":$scope.selectedAction.funcName,
            "args":{}
         };
-        //set the child_id/asset_id etc to the asset id
+        //set the child_id/asset_id etc to the id of the asset
         newFunction.args[$scope.selectedAction.assetVarName] = assetId;
 
         //only add blocking until second last item
-        if(counter < (assetIds.length-1)){
-          if($scope.selectedAction.blocking){
+        if(counter < (assetIds.length-1)) {
+          if($scope.selectedAction.blocking) {
             newFunction.blocking = 1;
           }else{
             newFunction.blocking = 0;
           }
         }
 
-        $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId,index);
+        $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId,index,fieldKeywords,counter);
 
         batchFunctionsToExecute[String(counter)] = newFunction;
         counter++;
       });// end assets iteration
 
     }else{
+
       var newFunction = {
          "function":$scope.selectedAction.funcName,
          "args":{}
       };
 
-      $scope.prepareActionBatchFunctionsSetVars(newFunction,null,index);
+      $scope.prepareActionBatchFunctionsSetVars(newFunction,null,index,fieldKeywords.counter);
 
-      batchFunctionsToExecute["0"] = newFunction;
+      batchFunctionsToExecute["0"] = [newFunction];
     }
     return batchFunctionsToExecute;
   }
 
 
 
-  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId,index) {
+  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId,index,fieldKeywords,counter) {
 
         //we're only setting the vars that have set = true
         var setVars = _.where($scope.selectedAction.vars,{set:true});
 
         //add vars' values
-        _.each(setVars,function(variable){
+        _.each(setVars,function(variable) {
 
-          if(variable.set){//if set
+          if(variable.set) {//if set
 
               //initialise to just val, might be overwritten
               newFunction.args[variable.name] = variable.val;
 
               //only if you get a text input
-              if((variable['type'] == 'string' || variable['type'] == 'integer') && assetId != null){
+              if((variable['type'] == 'string' || variable['type'] == 'integer') && assetId != null) {
 
-                if(!variable.csv){//if not csv
+                if(!variable.csv) {//if not csv
 
                   var stringVal = variable.val;
 
-                  if(variable.val.indexOf('%') != -1 && fieldKeywords.length){
+                  if(variable.val.indexOf('%') != -1 && fieldKeywords.length) {
                     //find any occurrances of the data field names in the 
                     //do keyword replacements
                     var asset = _.where($scope.assets,{"id":assetId})[0];
-                    _.each(fieldKeywords,function(field){
-                      stringVal = stringVal.replace('%'+field+'%',asset[field]);
+                    _.each(fieldKeywords,function(fieldId) {
+                      stringVal = stringVal.replace('%'+fieldId+'%',asset[fieldId]);
                     });
                     //replace index if it's in there
                     stringVal = stringVal.replace('%index%',String(counter+1));
@@ -3634,14 +3779,14 @@ $scope.actionsList = [
                   newFunction.args[variable.name] = csvValues[index];
                 }
 
-              }else if(variable['type'] == 'select'){
+              }else if(variable['type'] == 'select') {
                 newFunction.args[variable.name] = variable.val;
               }
 
           }//end if set
 
           //if var is required by js api then, set to nothing
-          if(!newFunction.args[variable.name] && variable.setRequired){
+          if(!newFunction.args[variable.name] && variable.setRequired) {
             newFunction.args[variable.name] = "";
           }
 
@@ -3664,25 +3809,25 @@ $scope.csvChangeChanges = [];
 $scope.csvChangeIds = [];
 $scope.csvChangeTxtCsv = 'id,name,125\n1455,Employee 1,Test Note 1\n1459,Employee 2,\n1463,Employee 3,\n1467,Employee 4,\n1471,Employee 5,\n1475,Employee 6,Test Note 6\n1479,Person 7,\n1483,Person 8,\n1487,Employee 9,Test Note 9\n1491,Employee 10,';
 
-$scope.csvChangeBtnCheckForChanges = function(){
+$scope.csvChangeBtnCheckForChanges = function() {
   $scope.csvChangeChanges = [];
 
   checkValidCsv($scope.csvChangeTxtCsv,
-    function(errors){
+    function(errors) {
       $scope.message('error-true','CSV invalid',errors);
-    },function(){
+    },function() {
       $scope.csvChangeAssets = $scope.convertChangesCsvToAssetArray($scope.csvChangeTxtCsv);
       //get ids and load data so we can compare
       var ids = [];
-      _.each($scope.csvChangeAssets,function(csvAsset){
+      _.each($scope.csvChangeAssets,function(csvAsset) {
         ids.push(csvAsset.id);
       });
 
 
-      if($scope.csvChangeReload || !$scope.csvChangeAssetsLoaded){
+      if($scope.csvChangeReload || !$scope.csvChangeAssetsLoaded) {
         //TODO check for new assets
 
-        $scope.getData({"assetIds":ids,callBack:function(){
+        $scope.getData({"assetIds":ids,callBack:function() {
           //TO DO must check for erroneous assets see if assets in 
           //non existent ids eg
           //$scope.message('error-true',"Some assets couldn't be compared...",unloadedAssets);
@@ -3701,12 +3846,12 @@ $scope.csvChangeBtnCheckForChanges = function(){
   );//end csv check
 };
 
-$scope.csvChangeBtnCheckForChangesStep2 = function(){
+$scope.csvChangeBtnCheckForChangesStep2 = function() {
     //now we can compare
-    _.each($scope.csvChangeAssets,function(csvAsset){//go through each asset
+    _.each($scope.csvChangeAssets,function(csvAsset) {//go through each asset
       var originalAsset = _.where($scope.assets,{id:Number(csvAsset.id)})[0];
-      for(var key in csvAsset){//go through each att
-        if(csvAsset.hasOwnProperty(key)){
+      for(var key in csvAsset) {//go through each att
+        if(csvAsset.hasOwnProperty(key)) {
           var newChange = {
             "id":csvAsset.id,
             "field":key,
@@ -3714,7 +3859,7 @@ $scope.csvChangeBtnCheckForChangesStep2 = function(){
             "from":''
           };
 
-          if(String(newChange.field).match(/^-?\d+\.?\d*$/) != null){//check if it's a number
+          if(String(newChange.field).match(/^-?\d+\.?\d*$/) != null) {//check if it's a number
             newChange.isMetadata = true;
             //get display field
             
@@ -3728,7 +3873,7 @@ $scope.csvChangeBtnCheckForChangesStep2 = function(){
 
           }
 
-          if(String(newChange.from) != String(newChange.to)){
+          if(String(newChange.from) != String(newChange.to)) {
             $scope.csvChangeChanges.push(newChange);
             $scope.csvChangeIds.push(newChange.id);
           }
@@ -3741,16 +3886,16 @@ $scope.csvChangeBtnCheckForChangesStep2 = function(){
 
 
 
-$scope.convertChangesCsvToAssetArray = function(csv){
+$scope.convertChangesCsvToAssetArray = function(csv) {
   var assetsArray = [];
   var csvArray = convertCsvToArray(csv);
   var assetRows = csvArray.splice(1,csvArray.length-1);//will leave csvArray with the first row and assetRows with the rest
   var fields = csvArray[0]; //the one item left in csvArray is the fields array
 
-  _.each(assetRows,function(assetRow){
+  _.each(assetRows,function(assetRow) {
     var newAsset = {};
 
-    _.each(fields,function(field,$index){
+    _.each(fields,function(field,$index) {
       newAsset[field] = assetRow[$index];
     })
     assetsArray.push(newAsset);
@@ -3760,25 +3905,41 @@ $scope.convertChangesCsvToAssetArray = function(csv){
 };
 
 
-$scope.csvChangeBtnExecuteChanges = function(){
+$scope.csvChangeBtnExecuteChanges = function() {
   var csvChangeBatchFunctions = $scope.csvChangeMakeBatchFunctions();
 
-  if($scope.csvChangeChkBatchFunctionsTest){
+  if($scope.csvChangeChkBatchFunctionsTest) {
     $scope.message('','Your batch of functions',csvChangeBatchFunctions);  
   }else{
     $scope.loadingStart('Making changes...');
-    jspAPIService.executeBatch(csvChangeBatchFunctions,function(results){
-      $scope.getData({"assetIds":$scope.csvChangeIds,callBack:function(){
+    $scope.executeBatchFunctions(csvChangeBatchFunctions,function(results) {
+      $scope.getData({"assetIds":$scope.csvChangeIds,callBack:function() {
         $scope.message('success','Changes made',results);
       }});
     });
   }
 };
 
-$scope.csvChangeMakeBatchFunctions = function(){
-  var csvBatchFunctions = {};
-  _.each($scope.csvChangeChanges,function(change,$index){
 
+
+$scope.csvChangeMakeBatchFunctions = function() {
+
+  var arrayOfArraysFunctions = divideArray($scope.csvChangeChanges,$scope.chunkAmount);
+  var arrayOfArraysBatches = [];
+
+  _.each(arrayOfArraysFunctions,function(functionsArray) {
+    arrayOfArraysBatches.push($scope.csvChangeMakeBatchFunctionsChunk(functionsArray));
+  })
+
+  return arrayOfArraysBatches;
+}
+
+
+
+$scope.csvChangeMakeBatchFunctionsChunk = function(changes) {
+
+  var csvBatchFunctions = {};
+  _.each(changes,function(change,$index) {
     var newFunction = {
       "args":{
         "asset_id":change.id
@@ -3786,7 +3947,7 @@ $scope.csvChangeMakeBatchFunctions = function(){
       "blocking":0
     };
 
-    if(change.isMetadata){
+    if(change.isMetadata) {
       newFunction["function"] = 'setMetadata';
       newFunction.args.field_id = change.field;
       newFunction.args.field_val = change.to;
@@ -3794,10 +3955,9 @@ $scope.csvChangeMakeBatchFunctions = function(){
       newFunction["function"] = 'setAttribute';
       newFunction.args.attr_name = change.field;
       newFunction.args.attr_val = change.to;
-    }    
+    }
 
-    csvBatchFunctions[String($index)] = newFunction;
-
+    csvBatchFunctions[$index] = newFunction;
   });
 
   return csvBatchFunctions;
@@ -3825,14 +3985,14 @@ $scope.csvChangeMakeBatchFunctions = function(){
   $scope.messageType = "";
 
 
-  $scope.message = function(type,title,content){
+  $scope.message = function(type,title,content) {
     $scope.messageType = type; //success/warning/error
     $scope.messageTitle = title;
     $scope.messageContent = content;
     $scope.cpanel.changeTab(3); // change to tab 3 for the message box
   }
 
-  $scope.messageClear = function(){
+  $scope.messageClear = function() {
     $scope.messageType = ""; //success/warning/error
     $scope.messageTitle = "Messaging box";
     $scope.messageContent = "";
@@ -3847,21 +4007,21 @@ $scope.csvDivider = ',';
 $scope.csvSelectedRadio = 'all';
 $scope.csvType = 'vertical';
 
-$scope.getCSV = function(){
+$scope.getCSV = function() {
   var myCSV = '';
 
 
   var assets = [];
   //if radio is on selected then get just those
-  if($scope.csvSelectedRadio === 'selected'){
-    if($scope.assetsSelected.length){
+  if($scope.csvSelectedRadio === 'selected') {
+    if($scope.assetsSelected.length) {
       assets = $scope.assetsSelected;
     }else{
       $scope.message('error-true',"No assets selected","Please select some assets in the table first");
       return null;
     }
 
-    if(!$scope.fieldsDisplay.length){
+    if(!$scope.fieldsDisplay.length) {
       $scope.message('error-true',"No fields selected","Please select a field from the display fields list on the right");
       return null;
     }
@@ -3875,51 +4035,51 @@ $scope.getCSV = function(){
 
   var orderedAssets = $filter('orderBy')(assets,$scope.sort.array);
 
-  if($scope.csvType == 'vertical'){
+  if($scope.csvType == 'vertical') {
     // start building csv
     myCSV += 'id' + $scope.csvDivider;
-    _.each($scope.fieldsDisplay,function(field, index){
-      if(field.isMetadata){
+    _.each($scope.fieldsDisplay,function(field, index) {
+      if(field.isMetadata) {
         myCSV += field.meta_id
       }else{
         myCSV += field.id
       }
 
-      if(index < ($scope.fieldsDisplay.length-1)){myCSV += $scope.csvDivider}
+      if(index < ($scope.fieldsDisplay.length-1)) {myCSV += $scope.csvDivider}
     });
     myCSV += '\n';
 
-    _.each(orderedAssets,function(asset){
+    _.each(orderedAssets,function(asset) {
       myCSV += asset.id + $scope.csvDivider;
-      _.each($scope.fieldsDisplay,function(field, index){
+      _.each($scope.fieldsDisplay,function(field, index) {
         //apply date filter to values
-        if(asset[field.id]){myCSV += $filter('prettifyDate')(asset[field.id],$scope.prettyDateFormat,$scope.prettyDates);}
-        if(index < ($scope.fieldsDisplay.length-1)){myCSV += $scope.csvDivider}
+        if(asset[field.id]) {myCSV += $filter('prettifyDate')(asset[field.id],$scope.prettyDateFormat,$scope.prettyDates);}
+        if(index < ($scope.fieldsDisplay.length-1)) {myCSV += $scope.csvDivider}
       });
       myCSV += '\n';
     });
   }
 
-  if($scope.csvType == 'horizontal'){
+  if($scope.csvType == 'horizontal') {
       //do 
       myCSV += 'id' + $scope.csvDivider
-      _.each(orderedAssets,function(asset, index){
+      _.each(orderedAssets,function(asset, index) {
         myCSV += asset.id;
-        if(index < (orderedAssets.length-1)){myCSV += $scope.csvDivider}
+        if(index < (orderedAssets.length-1)) {myCSV += $scope.csvDivider}
       });
       myCSV += '\n';
 
-      _.each($scope.fieldsDisplay,function(field){
-        if(field.isMetadata){
+      _.each($scope.fieldsDisplay,function(field) {
+        if(field.isMetadata) {
           myCSV += field.meta_id
         }else{
           myCSV += field.id
         }
         myCSV += $scope.csvDivider //field name first
-        _.each(orderedAssets,function(asset, index){
+        _.each(orderedAssets,function(asset, index) {
             //apply date filter to values
-            if(asset[field.id]){myCSV += $filter('prettifyDate')(asset[field.id],$scope.prettyDateFormat,$scope.prettyDates);}
-            if(index < (orderedAssets.length-1)){myCSV += $scope.csvDivider}
+            if(asset[field.id]) {myCSV += $filter('prettifyDate')(asset[field.id],$scope.prettyDateFormat,$scope.prettyDates);}
+            if(index < (orderedAssets.length-1)) {myCSV += $scope.csvDivider}
         });
         myCSV += '\n';
 
@@ -3933,19 +4093,19 @@ $scope.getCSV = function(){
 /*********************  4.3 Error checking  **********************/
 /*****************************************************************/
 
-$scope.errorCheckResults = function(results,successCallback,warningCallback,errorCallback){
+$scope.errorCheckResults = function(results,successCallback,warningCallback,errorCallback) {
   //check for fatal error
-  if(!results.length){
+  if(!results.length) {
     errorCallback(results);
     return null;
   }
 
   //check for individual function errors
   var errorNumber = 0;
-  _.each(results,function(result){
-    if(result["error"]){errorNumber++;}
+  _.each(results,function(result) {
+    if(result["error"]) {errorNumber++;}
   });
-  if(errorNumber > 0){
+  if(errorNumber > 0) {
       warningCallback(results, errorNumber);
       return null;
   }
@@ -3964,10 +4124,10 @@ $scope.errorCheckResults = function(results,successCallback,warningCallback,erro
 /*****************************************************************/
 /*****************************************************************/
 
-$scope.parentAssetId = '136';
-$scope.createType = 'CSV';
+$scope.parentAssetId = '1306';
+$scope.createType = 'normal';
 $scope.createNameCSV = '';
-$scope.createNumberOfAssets = 1;
+$scope.createNumberOfAssets = 33;
 $scope.createName = 'Asset %index%';
 $scope.createTypeCodeSelected = _.where($scope.loadAssetsTypeCodes,{id:'page_standard'})[0];
 $scope.createAssetsLoadAfter = true;
@@ -3976,29 +4136,29 @@ $scope.createBatchFunctionsTest = true;
 /************************  5.1 Bulk Create  *************************/
 /*****************************************************************/
 
-$scope.createAssets = function(){
+$scope.createAssets = function() {
 
   var batchFunctionsCreateAssets = $scope.makeCreateAssetsBatchFunctions();
 
-  if($scope.createBatchFunctionsTest){
+  if($scope.createBatchFunctionsTest) {
     $scope.message('','Your batch of functions',batchFunctionsCreateAssets);  
   }else{
 
     $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.name + "s...");
-    jspAPIService.executeBatch(batchFunctionsCreateAssets,function(results){
+    $scope.executeBatchFunctions(batchFunctionsCreateAssets,function(results) {
 
 
-      //if(){//error check
+      //if() {//error check
         $scope.message('success','Assets Created',results);
 
         var resultIds = [];
-        _.each(results, function(result, index){
-          if(result.id){
+        _.each(results, function(result, index) {
+          if(result.id) {
             resultIds.push(result.id);
           }
         });
 
-        if($scope.createAssetsLoadAfter){ 
+        if($scope.createAssetsLoadAfter) { 
           $scope.getData({"assetIds":resultIds});
         }
       // }else{
@@ -4010,39 +4170,64 @@ $scope.createAssets = function(){
 }
 
 
-$scope.makeCreateAssetsBatchFunctions = function(){
+
+$scope.makeCreateAssetsBatchFunctions = function() {
     //builds the batch functions object depending on what you pass in
-    var batchFunctions = {};
+    
+    var batchFunctionsArray = [];
 
-    var names = $scope.createNameCSV.split(',');
+    if($scope.createType == 'CSV'){
+      var names = $scope.createNameCSV.split(',');
+      if(names.length) {
 
-    if(names.length){
-      for(var n = 0;n < names.length;n++){
-        var parent_id = $scope.parentAssetId;
-        var type_code = $scope.createTypeCodeSelected.name;
-        var asset_name = null;
-        if($scope.createType == 'CSV'){asset_name = names[n]}
-        if($scope.createType == 'normal'){asset_name = $scope.createName.replace('%index%',String(c+1))}
+        var namesArrayOfArrays = divideArray(names,$scope.chunkAmount);
 
-        var newFunction = {
-          "function":'createAsset',
-          "args":{
-            "parent_id":parent_id,
-            "type_code":type_code,
-            "asset_name":asset_name
-          },
-          "blocking":0
-        };
+        _.each(namesArrayOfArrays,function(array){
+          batchFunctionsArray.push($scope.makeCreateAssetsBatchFunctionsChunk(array));
+        })
 
-        batchFunctions[String(n)] = newFunction;
+      }else{
+        $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
+      }// end if names.length      
+    }
+
+    if($scope.createType == 'normal') {
+      var names = [];
+      for(var n = 0;n < $scope.createNumberOfAssets;n++) {
+        var asset_name = $scope.createName.replace('%index%',String(n+1));
+        names.push(asset_name);
       };
-    }else{
-      $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
-    }// end if names.length
 
-    return batchFunctions;
+      var namesArrayOfArrays = divideArray(names,$scope.chunkAmount);
+
+      _.each(namesArrayOfArrays,function(array){
+        batchFunctionsArray.push($scope.makeCreateAssetsBatchFunctionsChunk(array));
+      })
+    }
+
+    return batchFunctionsArray;
 }
 
+
+$scope.makeCreateAssetsBatchFunctionsChunk = function(names){
+  var batchFunctions = {};
+
+  for(var n = 0;n < names.length;n++) {
+    var newFunction = {
+      "function":'createAsset',
+      "args":{
+        "parent_id":$scope.parentAssetId,
+        "type_code":$scope.createTypeCodeSelected.id,
+        "asset_name":names[n]
+      },
+      "blocking":0
+    };
+
+    batchFunctions[String(n)] = newFunction;
+  };
+
+  return batchFunctions;
+}
 
 /*****************************************************************/
 /************************  5.2 IA Convert  *************************/
@@ -4052,15 +4237,15 @@ $scope.iaTxtCsv = 'Home\nAbout Us\nContact\nContact,Where We Are\nContact,Openin
 
 $scope.iaPreparedHTML = '';
 
-$scope.iaBtnConvert = function(){
+$scope.iaBtnConvert = function() {
   var headingsObject = {};
   var rows = $scope.iaTxtCsv.split('\n');
 
   $scope.iaPreparedHTML = '';
 
-  _.each(rows,function(rowStr){
+  _.each(rows,function(rowStr) {
     var row = rowStr.replace(/^\s+|\s+$/g,'');
-    if(row != ''){
+    if(row != '') {
       $scope.iaLoadRow(row,headingsObject);
     }
   });
@@ -4070,25 +4255,37 @@ $scope.iaBtnConvert = function(){
   $scope.message('success',"Here's your site structure creation HTML...",$scope.iaPreparedHTML);
 };
 
-$scope.iaLoadRow = function(rowString,headingsObject){
+$scope.iaLoadRow = function(rowString,headingsObject) {
   var pages = rowString.split(','); //Contact,Opening Hours,Sydney
   var checkPointer = headingsObject;
-  _.each(pages,function(pageStr,$index){
+  _.each(pages,function(pageStr,$index) {
     if(!checkPointer.hasOwnProperty(pageStr)) checkPointer[pageStr] = {};
     checkPointer = checkPointer[pageStr]
   });
 }
 
-$scope.iaObjToHtml = function(obj,level){
+$scope.iaObjToHtml = function(obj,level) {
   for (var key in obj) {
-     if (obj.hasOwnProperty(key)){
-        for(var t = 1;t<level;t++){$scope.iaPreparedHTML += '\t'}
+     if (obj.hasOwnProperty(key)) {
+        for(var t = 1;t<level;t++) {$scope.iaPreparedHTML += '\t'}
         $scope.iaPreparedHTML += ('<h'+level+'>' + key.replace(/^\s+|\s+$/g,'') + '</h'+level+'>');
         $scope.iaPreparedHTML += '\n';
         $scope.iaObjToHtml(obj[key],level+1);
      }
   }
 }
+
+
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+/***********************  6. Config Panel  ***********************/
+/*****************************************************************/
+/*****************************************************************/
+/*****************************************************************/
+
+$scope.chunkAmount = '10';
+
 
 
 }); //end ControllerMain
