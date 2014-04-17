@@ -107,7 +107,9 @@
                       <label for="asset-{{asset.id}}"><img src="{{siteRoot}}/__lib/web/images/blank.gif" width="10" height="10" alt="{{asset.status}}" title="{{asset.status}}" align="absmiddle" style="border: 1px solid #ccc; background-color: #{{asset.status | statusColor:matrixAssetStatuses}}"></label>
                     </td>
                     <td class="id"><a title="Preview asset {{asset.id}} in new tab" href="{{asset.web_path}}" target="_blank">{{asset.id}}</a></td>
+                    
                     <td ng-repeat="field in fieldsDisplay"> <label for="asset-{{asset.id}}">{{asset[field.id] | prettifyDate:prettyDateFormat:prettyDates}}</label></td>
+
                     <td class="remove"><button type="button" class="btn btn-default btn-xs" title="Remove from list" ng-click="removeFromArray(assets,asset)">X</button></td>
                   </tr>
                 </tbody>
@@ -136,7 +138,8 @@
       <div id="tab-1-content" class="footer-panel-content active-{{cpanel.tabStatuses[1]}}">
           <div class="inner-tab-buttons">
             <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][1]}}" ng-click="cpanel.changeTab(1,1)">Bulk Create</div>
-            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][2]}}" ng-click="cpanel.changeTab(1,2)">IA Convert</div>
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][2]}}" ng-click="cpanel.changeTab(1,2)">Structure Create</div>
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[1][3]}}" ng-click="cpanel.changeTab(1,3)">IA Convert</div>
           </div>
 
           <div class="inner-tab-contents">
@@ -214,13 +217,46 @@
               </form>
             </div> <!-- end .inner-tab-content -->
 
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[1][2]}}" >
+              <div class="col-sm-8">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="structureCreateTxtRoot">Root node id
+                      <input type="text" id="structureCreateTxtRoot" class="form-control" ng-model="structureCreateTxtRoot" />
+                    </label>
+                  </div> 
 
-            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[1][2]}}">
+                  <div class="form-group">
+                    <label for="structureCreateTxtCsv">Structure CSV</label>
+                    <textarea wrap="off" id="structureCreateTxtCsv" class="form-control" rows="7" ng-model="structureCreateTxtCsv"></textarea>
+                  </div> 
+                  <div class="form-group">
+                    <label for="structureCreateTxtCsv">Available asset types</label>
+                    <select id="structureCreateTxtCsv" class="form-control">
+                      <option ng-repeat="code in loadAssetsTypeCodes | orderBy:'name'" value="{{code.id}}" >{{code.name}} ({{code.id}})</option>
+                    </select>
+                  </div>                   
+                  <button type="submit" ng-click="structureCreateBtnCheck()" class="btn btn-primary btn-lg">Load CSV</button>
+                  <button type="submit" ng-click="structureCreateBtnCreate()" class="btn btn-primary btn-lg showing-{{structureCreateReady}}">Create structure</button>
+                </form> 
+              </div>              
+
+              <div class="col-sm-4 showing-{{structureCreateReady}}">
+                <h4>Good to go!</h4>
+                <ul>
+                  <li ng-if="key != 'total'" ng-repeat="(key,val) in structureCreateCounts"><strong>{{key}}</strong> x {{val}}</li>
+                </ul>
+                <p>Total: <strong>{{structureCreateCounts.total}}</strong> assets to be made</p>
+              </div>
+
+            </div>
+
+            <div class="inner-tab-content active-{{cpanel.innerTabStatuses[1][3]}}">
               <div class="col-sm-13">
                 <form role="form">
                   <div class="form-group">
                     <label for="asset-ids">CSV</label>
-                    <textarea class="form-control" rows="10" ng-model="iaTxtCsv" placeholder="Client page structure CSV.... e.g. Home <br/> Test">
+                    <textarea wrap="off" class="form-control" rows="10" ng-model="iaTxtCsv" placeholder="Client page structure CSV.... e.g. Home <br/> Test">
                     </textarea>
                   </div> 
                   <button type="submit" ng-click="iaBtnConvert()" class="btn btn-primary btn-lg">Convert</button>
@@ -443,19 +479,59 @@
 
       <div id="tab-5-content" class="footer-panel-content active-{{cpanel.tabStatuses[5]}}">
 
-        <div class="col-sm-12">
-          <form role="form">
-            <div id="message" class="form-group has-{{messageType}}">
-              <label>
-                <input class="form-control" type="text" ng-model="chunkAmount"> <span class="bold">Chunk size</span> (How many functions will be executed at once)
-              </label>
+        <div class="col-sm-4">
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-5" for="apiKey">API key</label>
+                <div class="col-sm-7">
+                  <input id="apiKey" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkType">chunkType</label>
+                <div class="col-sm-7">
+                  <select id="chunkType" type="text" ng-model="chunkType">
+                    <option value="flexible">Flexible</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </div>
+            </div>            
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkAmount">Chunk size</label>
+                <div class="col-sm-7">
+                  <input id="chunkAmount" class="form-control" type="text" ng-model="chunkManualAmount" ng-disabled="chunkType != 'manual'"> 
+                  <br>(How many functions will be executed at once)
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkFlexibleDivisionAmount">Chunk Division Amount</label>
+                <div class="col-sm-7">
+                  <input id="chunkFlexibleDivisionAmount" class="form-control" type="text" ng-model="chunkFlexibleDivisionAmount" ng-disabled="
+                chunkType != 'flexible'"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkFlexibleMin">Chunk Min</label>
+                <div class="col-sm-7">
+                  <input id="chunkFlexibleMin" class="form-control" type="text" ng-model="chunkFlexibleMin" ng-disabled="chunkType != 'flexible'"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkFlexibleMax">Chunk Max</label>
+                <div class="col-sm-7">
+                  <input id="chunkFlexibleMax" class="form-control" type="text" ng-model="chunkFlexibleMax" ng-disabled="chunkType != 'flexible'"/>
+                </div>
             </div>
           </form>
         </div>
-        
+
+        <div class="col-sm-4">
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+
       </div>    <!-- end tab 5 -->
-
-
     </div><!-- end #footer panel -->
 
 
@@ -467,12 +543,12 @@
     <p>&nbsp;</p>
     <p class="loader-text showing-block-{{loaderOne.showing}}">{{loaderOne.text}}</p>
     <div id="progress-bar1" class="progress-bar showing-block-{{loaderOne.showing}}">
-        <span style="width: {{loaderOne.progress}}%;"></span>
+        <span style="width: {{(loaderOne.current/loaderOne.total)*100}}%;"></span>
     </div>
     <p>&nbsp;</p>
     <p class="loader-text showing-block-{{loaderTwo.showing}}">{{loaderTwo.text}}</p>
     <div id="progress-bar2" class="progress-bar showing-block-{{loaderTwo.showing}}">
-        <span style="width: {{loaderTwo.progress}}%;"></span>
+        <span style="width: {{(loaderTwo.current/loaderTwo.total)*100}}%;"></span>
     </div>
   </div>
 
@@ -555,16 +631,6 @@ function prettifyName(string) {
   return newString;
 }
 
-function divideArray(array,divideAmount) {
-  var newArray = _.clone(array);
-  var arrayOfArrays = [];
-  var len = Number(divideAmount);
-  for(var a = 0;newArray.length > len;a++) {//while assetIds is more than chunk size, keep splicing
-    arrayOfArrays.push(newArray.splice(0,len));
-  }
-  if(newArray.length) {arrayOfArrays.push(newArray);}//if theres any left in assetIds, push that also
-  return arrayOfArrays;
-}
 
 /* 
 
@@ -1247,7 +1313,6 @@ $scope.loadAssetsTypeCodes = [
     {"name":"XML User Bridge","id":"xml_user_bridge"}
 ];
 
-
 $scope.actionsList = [
     {
         "funcName": "createAsset",
@@ -1698,14 +1763,14 @@ $scope.actionsList = [
                 "requiredSet":true,
                 "set":true,
                 "name": "asset_ids",
-                "type": "array / string",
+                "type": "string",
                 "val": "",
                 "csv": false,
                 "example": "",
                 "note": "Id of the asset(s) to delete"
             }
         ],
-        "disabled": true,
+        "disabled": false,
         "blocking": false,
         "name": "Trash Asset"
     },
@@ -2959,7 +3024,28 @@ $scope.actionsList = [
 
 
 /********************  Global functions  *********************/
+    $scope.divideArray = function(array) {
+      var newArray = _.clone(array);
+      var arrayOfArrays = [];
 
+      var divSize = 0;
+
+      if($scope.chunkType == 'manual'){
+        divSize = Number($scope.chunkManualAmount);
+      }else{
+        divSize = Math.floor(newArray.length / $scope.chunkFlexibleDivisionAmount);
+        var min = Number($scope.chunkFlexibleMin);
+        var max = Number($scope.chunkFlexibleMax);
+        if(divSize > max) divSize = max;
+        if(divSize < min) divSize = min;
+      }
+
+      for(var a = 0;newArray.length > divSize;a++) {//while assetIds is more than chunk size, keep splicing
+        arrayOfArrays.push(newArray.splice(0,divSize));
+      }
+      if(newArray.length) {arrayOfArrays.push(newArray);}//if theres any left in assetIds, push that also
+      return arrayOfArrays;
+    }
 
     $scope.removeFromArray = function(array,item) {
       var index = array.indexOf(item)
@@ -2978,6 +3064,15 @@ $scope.actionsList = [
         totalBatchFunctions += Object.keys(batch).length;
       });
       var totalExecuted = 0;
+
+      //if it's just one function (like getChildren), they're just gonna have to wait! So just show a full progress bar
+      if(totalBatchFunctions == 1 && $scope.loaderOne.current == 0){
+        $scope.loaderOne.showing = false;
+        $scope.loaderTwo.current = 1;
+        $scope.loaderTwo.total = 1;
+      }else{
+        $scope.loaderOne.showing = true;
+      }
 
       for (c in batchFunctionsChunked){
         if(batchFunctionsChunked.hasOwnProperty(c)){
@@ -3022,21 +3117,34 @@ $scope.actionsList = [
   $scope.loading = false;
   $scope.loadingText = '';
 
-  $scope.loaderOne = {showing:false,text:'',progress:100};
-  $scope.loaderTwo = {showing:true,text:'',progress:100};
+  $scope.loaderOne = {showing:true,text:'',total:0,current:0};
+  $scope.loaderTwo = {showing:true,text:'',total:0,current:0};
 
   $scope.loadingStart = function(text) {//number of processes is usually 2/3/4, setMetadata, getGeneral, getMetadata,
-    $scope.loading = true;
+    if($scope.loading){
+      //it's already loading so go to the next
+      $scope.loaderOne['current']++;//moving to next large function e.g. now setting metadata
+    }else{
+      //starting a new load
+      $scope.loading = true;
+      $scope.loaderOne['current'] = 0
+    }
+
+    $scope.loaderTwo.progress = 0;// reset this every time a new function starts
+
     if(text) {
       $scope.loadingText = text;
+      $scope.loaderOne.text = text;
     }else{
       $scope.loadingText = 'Loading...';
+      $scope.loaderOne.text = 'Loading...';
     }
-    $scope.loaderTwo.progress = 0;     
+
   }
 
   $scope.loaderUpdate = function(loader,total,current) {
-    loader.progress = (current/total) * 100;
+    loader['total'] = total;
+    loader['current'] = current;
     loader.text = current + " of " + total;
   }
 
@@ -3050,6 +3158,7 @@ $scope.actionsList = [
     });
     $scope.assetsSelected = [];
     $scope.searchChanged();//just to update search, in case you delete all the ones you searched for
+    $scope.csvChangeAssetsLoaded = false;//for the bulk csv change, makes sure you need to reload your assets
   }
 
   $scope.refreshSelectedAssets = function() {
@@ -3113,12 +3222,12 @@ $scope.actionsList = [
 
   $scope.cpanel = {
     "showing":true,
-    "tabStatuses":['',false,true,false,false,false],//ignore the '', its there to have the indexes as 1234 instead of 0123
+    "tabStatuses":['',true,false,false,false,false],//ignore the '', its there to have the indexes as 1234 instead of 0123
     "innerTabStatuses":['',
-      ['',false,true],//tab 1
+      ['',false,true,false],//tab 1
       ['',true,false],//tab 2
       ['',true,false],//tab 3
-      ['',false,true]//tab 4
+      ['',false,true],//tab 4
       ['',false,true]//tab 5
     ],
     "changeTab":function(tab,innerTab) {
@@ -3259,6 +3368,9 @@ $scope.actionsList = [
     $scope.loadAssetsGetMetadata = true;
 
     $scope.getData = function(params) {
+      $scope.loadAssetStepOneResultAssets = [];//reset
+      $scope.loadAssetStepTwoIds = [];//reset
+
       //there is the option to pass in an array of ids, useful for other functions that need to load assets
       if(params && params.assetIds) {
         $scope.loadAssetIds = params.assetIds;
@@ -3267,13 +3379,9 @@ $scope.actionsList = [
         $scope.loadAssetIds = $scope.loadAssetIdsString.split(',');
       }
       
-
-      //TODO find out how many different actions there are 
-      /*
-      - get Children
-      - get General
-      - get Metadata
-      */
+      if(!$scope.loading){//if already loading then no need to set total functions
+        $scope.loaderOne.total = 2;
+      }
 
       /*********************** CASCADE **************************/
 
@@ -3294,6 +3402,7 @@ $scope.actionsList = [
           batchFunctionsChildrenAtts.type_codes = typeCodes;
         }
         
+        //NOTE don't need to execute getGeneral because getChildren returns attributes
         var batchFunctionsChildren = $scope.makeBatchFunctions("getChildren",batchFunctionsChildrenAtts,$scope.loadAssetIds);
 
         $scope.loadingStart('Getting children...');
@@ -3307,6 +3416,7 @@ $scope.actionsList = [
                 });
               }
           }); //end each gatheredResults
+
 
           if($scope.loadAssetsIncludeRoots) {//if include roots is checked
             // execute getGeneral info on these ids
@@ -3373,7 +3483,7 @@ $scope.actionsList = [
           $scope.getDataStepThree(params);
         });
       }else{
-        $scope.getDataStepThree(params);
+        $scope.getDataStepFour(params);
       }
     }
 
@@ -3396,7 +3506,7 @@ $scope.actionsList = [
 
     $scope.makeBatchFunctions = function(funcName,attributes,assetIds) {
 
-      var arrayOfArraysIds = divideArray(assetIds,$scope.chunkAmount);
+      var arrayOfArraysIds = $scope.divideArray(assetIds);
       var arrayOfArraysBatches = [];
       _.each(arrayOfArraysIds,function(idsArray) {
         arrayOfArraysBatches.push($scope.makeBatchFunctionsChunk(funcName,attributes,idsArray));
@@ -3506,7 +3616,6 @@ $scope.actionsList = [
       var getMetadataFieldsBatchFunctions = $scope.makeBatchFunctions("getMetadataSchema",{},ids);
 
       $scope.loadingStart('Getting metadata fields...');
-
       $scope.executeBatchFunctions(getMetadataFieldsBatchFunctions,function(results) {
         var allSchemas = {};
 
@@ -3651,23 +3760,24 @@ $scope.actionsList = [
     if($scope.actionsBatchFunctionsTest) {
       $scope.message('','Your batch of functions',batchFunctionsActionsExecute);  
     }else{
-      $scope.loadingStart('Executing ' + $scope.selectedAction.name + '...');
 
+      $scope.loaderOne.total = 3;
+      $scope.loadingStart('Executing ' + $scope.selectedAction.name + '...');
       $scope.executeBatchFunctions(batchFunctionsActionsExecute,function(results) {
 
         $scope.errorCheckResults(
           results,
-          function(results) {
-            $scope.message('success','Action Batch functions executed on all assets',results);  
+          function(results, successCount) {
+            $scope.message('success', 'All ' + successCount + ' action batch functions successfully executed',results);  
           },
-          function(results, errorCount) {
-            $scope.message('warning','Action Batch functions executed with '+ errorCount +' errors',results);  
+          function(results, errorCount, successCount) {
+            $scope.message('warning',successCount + ' action batch functions successfully executed with '+ errorCount +' errors',results);  
           },
           function(results) {
             $scope.message('error-true','Did not run due to an error',results);  
           }
         );
-        
+
         //if it was a group asset function
         if($scope.selectedAction.assetVarName) {
           $scope.loadingStart('Reloading actioned assets...');
@@ -3683,7 +3793,7 @@ $scope.actionsList = [
 
 $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
 
-  var arrayOfArraysIds = divideArray(assetIds,$scope.chunkAmount);
+  var arrayOfArraysIds = $scope.divideArray(assetIds);
   var arrayOfArraysBatches = [];
   _.each(arrayOfArraysIds,function(idsArray) {
     arrayOfArraysBatches.push($scope.prepareActionBatchFunctionsChunk(idsArray,fieldKeywords));
@@ -3730,7 +3840,7 @@ $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
          "args":{}
       };
 
-      $scope.prepareActionBatchFunctionsSetVars(newFunction,null,index,fieldKeywords.counter);
+      $scope.prepareActionBatchFunctionsSetVars(newFunction,null,null,fieldKeywords.counter);
 
       batchFunctionsToExecute["0"] = [newFunction];
     }
@@ -3755,29 +3865,30 @@ $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
               //only if you get a text input
               if((variable['type'] == 'string' || variable['type'] == 'integer') && assetId != null) {
 
+                var stringVal = '';
+                var csvValues = variable.val.split(',');
+
                 if(!variable.csv) {//if not csv
-
-                  var stringVal = variable.val;
-
-                  if(variable.val.indexOf('%') != -1 && fieldKeywords.length) {
-                    //find any occurrances of the data field names in the 
-                    //do keyword replacements
-                    var asset = _.where($scope.assets,{"id":assetId})[0];
-                    _.each(fieldKeywords,function(fieldId) {
-                      stringVal = stringVal.replace('%'+fieldId+'%',asset[fieldId]);
-                    });
-                    //replace index if it's in there
-                    stringVal = stringVal.replace('%index%',String(counter+1));
-                  }//end check %
-
-                  newFunction.args[variable.name] = stringVal;
-
+                  stringVal = variable.val;
                 }else{
                   //CSV CSV CSV CSV CSV CSV CSV CSV 
                   //TODO - maybe improve this so it's not splitting every time
-                  var csvValues = variable.val.split(',');
-                  newFunction.args[variable.name] = csvValues[index];
+                  stringVal = csvValues[index];
                 }
+
+                if(variable.val.indexOf('%') != -1 && fieldKeywords.length) {
+                  //find any occurrances of the data field names in the 
+                  //do keyword replacements
+                  var asset = _.where($scope.assets,{"id":assetId})[0];
+                  _.each(fieldKeywords,function(fieldId) {
+                    stringVal = stringVal.replace('%'+fieldId+'%',asset[fieldId]);
+                  });
+                  //replace index if it's in there
+                  stringVal = stringVal.replace('%index%',String(counter+1));
+                }//end check %
+
+                newFunction.args[variable.name] = stringVal;
+
 
               }else if(variable['type'] == 'select') {
                 newFunction.args[variable.name] = variable.val;
@@ -3911,6 +4022,7 @@ $scope.csvChangeBtnExecuteChanges = function() {
   if($scope.csvChangeChkBatchFunctionsTest) {
     $scope.message('','Your batch of functions',csvChangeBatchFunctions);  
   }else{
+    $scope.loaderOne.total = 3;
     $scope.loadingStart('Making changes...');
     $scope.executeBatchFunctions(csvChangeBatchFunctions,function(results) {
       $scope.getData({"assetIds":$scope.csvChangeIds,callBack:function() {
@@ -3924,7 +4036,7 @@ $scope.csvChangeBtnExecuteChanges = function() {
 
 $scope.csvChangeMakeBatchFunctions = function() {
 
-  var arrayOfArraysFunctions = divideArray($scope.csvChangeChanges,$scope.chunkAmount);
+  var arrayOfArraysFunctions = $scope.divideArray($scope.csvChangeChanges);
   var arrayOfArraysBatches = [];
 
   _.each(arrayOfArraysFunctions,function(functionsArray) {
@@ -4100,17 +4212,30 @@ $scope.errorCheckResults = function(results,successCallback,warningCallback,erro
     return null;
   }
 
-  //check for individual function errors
-  var errorNumber = 0;
-  _.each(results,function(result) {
-    if(result["error"]) {errorNumber++;}
+  var successResults = [];
+  var errorResults = [];
+
+  //concat all results together
+  var allResults = [];
+  _.each(results,function(resultsChunk) {
+    allResults = allResults.concat(resultsChunk);
   });
-  if(errorNumber > 0) {
-      warningCallback(results, errorNumber);
-      return null;
+
+  _.each(allResults,function(result,$index) {
+    if(result["error"]) {
+      errorResults.push(result);
+    }else{
+      successResults.push(result);
+    }
+  });
+
+  var mixedResults = errorResults.concat(successResults);
+  if(errorResults.length > 0) {
+    warningCallback(mixedResults, errorResults.length, successResults.length);
+    return null;
   }
 
-  successCallback(results);
+  successCallback(results, results.length);
   return null;
 }
 
@@ -4126,7 +4251,7 @@ $scope.errorCheckResults = function(results,successCallback,warningCallback,erro
 
 $scope.parentAssetId = '1306';
 $scope.createType = 'normal';
-$scope.createNameCSV = '';
+$scope.createNameCSV = 'Acids and Alkalis,Aerosol Cans,Air Conditioners (plastic),Aluminium cans,Aluminium foil - clean,Aluminium foil - soiled,Ammunition,Animal droppings,Asbestos,Asphalt,BBQ chicken bags,Baskets,Bathtubs, sinks and vanities,Beer bottles and cans,Bicycles,Biscuit trays,Blankets and bedsheets,Bones,Books,Bottle Tops - Metal,Bottle Tops - Plastic,Bottles,Branches,Bread,Bricks,Bubble wrap,Building materials,Butter wrappers,CDs,Cake trays,Car batteries,Car parts,Carbon paper,Cardboard - unwaxed,Cardboard - waxed,Carpets & underlay,Cartridges,Cassette tapes,Cat litter,Cellophane,Ceramics and Crockery,Chlorine and Pool Chemicals,Christmas cards (used),Christmas trees - fake,Christmas trees - live,Cigarette butts,Cigarette packets,Clean Fill / Soil known as VENM,Cleaners - Household,Cling wrap,Clothing,Coat hangers,Cockroach baits,Coffee grinds,Commercial Waste,Computers,Concrete,Construction Waste,Corks,Cupboards,Demolition waste,Detergent bottles,Dialysis Waste,Disposable nappies,Doors,Drums - Metal, empty,Egg cartons - cardboard,Electronic and electrical waste,Engine Oil,Envelopes,Envelopes - with and without windows,Eye glasses,Fabric,Fencing - Colorbond ,Cyclone and other metal fencing,Fibro,Fire extinguishers,Flares,Flowers,Fluorescent tubes and globes,Foam boxes, meat trays, cups,Food scraps,Fridge & Freezers,Fruit scraps and peelings,Fuel,Fungicides,Furniture,Garden Waste,Garden hoses and tools,Gas bottles/cylinders,Glass - broken and wrapped,Glass jars and bottles,Grass clippings,Greeting cards,Guttering - Metal,Gyprock/Plasterboard,Hair clippings,Hazardous chemicals,Herbicides,Hobby chemicals,Hot water systems,Household Cleaners,Ice cream containers,Illegal waste,Insulation batts,Jar lids (plastic/metal),Jars,Juice cartons,Junk mail,Kitchen cupboards and sinks,Kitty litter,Lattice,Lawn mowers,Lead crystal,Leaves,Light globes - wrapped,Linoleum,Logs,Magazines,Manure,Margarine Tubs,Masonite,Matchboxes,Mattresses,Meat scraps,Meat trays,Medicine bottles (empty & rinsed),Medicines - expired,Metal electrical appliances,Metal roofing,Microwave meal plates and bowls,Milk Crates,Milk and juice cartons (liquid paperboard),Mirrors,Mobile Phoness,Motor oil containers - empty,Motor oils, fuels and fluid,Nappies - disposable,Needles (syringes),Newspapers - clean,Newspapers - soiled,Oil - cooking,Oil - motor,Paint tins (empty and dry),Paint tins (half empty),Paints, Solvents and Cleaners,Pallets,Palm trees and fronds,Paper,Perspex,Pesticides,Pet food tins,Petrol,Pill and tablet packets,Pine - treated,Pizza boxes - clean,Pizza boxes - with food,Plastic - Nos. 1-7,Plastic bags,Plastic film, shrink and cling wrap,Poisons,Polystyrene,Pool Chemicals,Printer Ink Cartridges,Razors - disposable,Renovation waste,Ribbons,Roof Tiles,Rope,Sand and soil,Sandstone,Sanitary items (pads, tampons),Scrap metal,Seedling trays and containers,Shampoo and conditioner bottles,Shoes,Shopping trolleys,Smoke alarms/detectors,Soft drink bottles and cans,Solvents,Steel - other,Steel cans,Stoves and ovens,Styrofoam,Syringes/sharps,Takeaway food containers,Teabags,Telephone books,Televisions,Tiles - roof, bathroom,Timber - treated, painted, large pieces,Timber - untreated, unpainted, small offcuts,Tin cans,Tissues,Toilets,Towels,Toys,Tree stumps,Tyres,Vacuum cleaner dust,Vegetable scraps and peelings,Vegetation and thorny prunings,Vinyl,Weeds,White goods,Window glass (broken, wrapped),Windows frames,Wine cask bladders,Wood dust and shavings,Wrapping paper,X-ray films,Yoghurt containers';
 $scope.createNumberOfAssets = 33;
 $scope.createName = 'Asset %index%';
 $scope.createTypeCodeSelected = _.where($scope.loadAssetsTypeCodes,{id:'page_standard'})[0];
@@ -4143,7 +4268,7 @@ $scope.createAssets = function() {
   if($scope.createBatchFunctionsTest) {
     $scope.message('','Your batch of functions',batchFunctionsCreateAssets);  
   }else{
-
+    $scope.loaderOne.total = 3;
     $scope.loadingStart('Creating ' + $scope.createTypeCodeSelected.name + "s...");
     $scope.executeBatchFunctions(batchFunctionsCreateAssets,function(results) {
 
@@ -4152,7 +4277,7 @@ $scope.createAssets = function() {
         $scope.message('success','Assets Created',results);
 
         var resultIds = [];
-        _.each(results, function(result, index) {
+        _.each(results, function(result) {
           if(result.id) {
             resultIds.push(result.id);
           }
@@ -4180,7 +4305,7 @@ $scope.makeCreateAssetsBatchFunctions = function() {
       var names = $scope.createNameCSV.split(',');
       if(names.length) {
 
-        var namesArrayOfArrays = divideArray(names,$scope.chunkAmount);
+        var namesArrayOfArrays = $scope.divideArray(names);
 
         _.each(namesArrayOfArrays,function(array){
           batchFunctionsArray.push($scope.makeCreateAssetsBatchFunctionsChunk(array));
@@ -4198,7 +4323,7 @@ $scope.makeCreateAssetsBatchFunctions = function() {
         names.push(asset_name);
       };
 
-      var namesArrayOfArrays = divideArray(names,$scope.chunkAmount);
+      var namesArrayOfArrays = $scope.divideArray(names);
 
       _.each(namesArrayOfArrays,function(array){
         batchFunctionsArray.push($scope.makeCreateAssetsBatchFunctionsChunk(array));
@@ -4229,51 +4354,323 @@ $scope.makeCreateAssetsBatchFunctionsChunk = function(names){
   return batchFunctions;
 }
 
+
 /*****************************************************************/
-/************************  5.2 IA Convert  *************************/
+/********************  5.2 Structure Create  *********************/
 /*****************************************************************/
+$scope.structureCreateTxtRoot = '4044';
+$scope.structureCreateReady = false;
+$scope.structureCreateErrorText = '';
+$scope.structureCreateCounts = {};
 
-$scope.iaTxtCsv = 'Home\nAbout Us\nContact\nContact,Where We Are\nContact,Opening Hours,Sydney\nContact,Opening Hours,Melbourne\nAbout Us,Location\nNames,George';
+$scope.structureCreateTxtCsv = 'Home(page_standard)\nAbout Us(page_standard)\nContact(page_standard)\nContact(page_standard),Where We Are(page_standard)\nContact(page_standard),Opening Hours(page_standard),Sydney(page_standard)\nDocuments(folder),Important(folder),Document 1(page_standard)\nDocuments(folder),Not so important(folder),Document 2(page_standard)\nContact(page_standard),Opening Hours(page_standard),Melbourne(page_standard)\nAbout Us(page_standard),Location(page_standard)\nNames(page_standard),George(page_standard)';
 
-$scope.iaPreparedHTML = '';
+$scope.structureCreateArray = [];
+$scope.structureCreateObject = {};
 
-$scope.iaBtnConvert = function() {
-  var headingsObject = {};
-  var rows = $scope.iaTxtCsv.split('\n');
+$scope.structureCreateBtnCheck = function(){
+  $scope.structureCreateReady = false;
+  $scope.structureCreateErrorText = '';
+  $scope.structureCreateObject = {};
+  $scope.structureCreateArray = [];
+  $scope.structureCreateCounts = {"total":0};
 
-  $scope.iaPreparedHTML = '';
+  $scope.convertStructureCsv(
+    $scope.structureCreateTxtCsv,
+    function(){//success function
+      //TODO show number of assets
+      $scope.structureCreateReady = true;
+    },
+    function(){//fail function
+      $scope.message('error-true',"Oops! CSV had some errors...",$scope.structureCreateErrorText);
+    }
+  );
+}
 
-  _.each(rows,function(rowStr) {
-    var row = rowStr.replace(/^\s+|\s+$/g,'');
+
+$scope.convertStructureCsv = function(csv,successCallback,errorCallback) {
+  var rows = csv.split('\n');
+
+
+  _.each(rows,function(rowStr,$index) {
+    var row = rowStr.replace(/^\s+|\s+$/g,'');//remove whitespace
     if(row != '') {
-      $scope.iaLoadRow(row,headingsObject);
+      $scope.convertStructureCsvLoadRow(row,$index);
     }
   });
 
-  $scope.iaObjToHtml(headingsObject,1);
+  if($scope.structureCreateErrorText == ''){
+    //TODO count types from $scope.structureCreateArray
 
-  $scope.message('success',"Here's your site structure creation HTML...",$scope.iaPreparedHTML);
+    _.each($scope.structureCreateArray,function(assetRow){
+      _.each(assetRow,function(asset){
+        if(!$scope.structureCreateCounts[asset.type]) $scope.structureCreateCounts[asset.type] = 0; //if it doesnt exist create it 
+        $scope.structureCreateCounts[asset.type]++; //increment page_standard:33 to page_standard:34 
+        $scope.structureCreateCounts.total++;
+      });
+    });
+
+    successCallback();
+  }else{
+    errorCallback($scope.structureCreateErrorText);
+  }
 };
 
-$scope.iaLoadRow = function(rowString,headingsObject) {
+$scope.convertStructureCsvLoadRow = function(rowString,rowIndex) {
   var pages = rowString.split(','); //Contact,Opening Hours,Sydney
-  var checkPointer = headingsObject;
+  var checkPointer = $scope.structureCreateObject;
+  var currentParentName = null;
+
   _.each(pages,function(pageStr,$index) {
-    if(!checkPointer.hasOwnProperty(pageStr)) checkPointer[pageStr] = {};
-    checkPointer = checkPointer[pageStr]
+
+    //BUILD STRUCTURE ARRAY
+    if(!$scope.structureCreateArray[$index]){//if there's no array for this level then make it
+      $scope.structureCreateArray[$index] = [];
+    }
+
+
+    var y = pageStr.indexOf('(');
+    var z = pageStr.indexOf(')');
+
+    var currentName = '';
+    var type = '';
+
+    if(y == -1 || z == -1){//CHECK for brackets
+      $scope.structureCreateErrorText += 'Row ' + String(rowIndex+1) + ', item ' + String($index+1) + ' - "' + pageStr +  '" has a bracket missing (Please correct the format e.g. Home(page_standard)\n';
+    }else{
+      type = pageStr.substr(y+1,z-y-1);
+      currentName = pageStr.substr(0,y);
+
+      if(_.where($scope.loadAssetsTypeCodes,{id:type}).length == 0){//CHECK valid asset type
+        $scope.structureCreateErrorText += 'Row ' + String(rowIndex+1) + ', item ' + String($index+1) + ' - "' + type +  '" is an invalid asset type\n';
+      }else{
+
+        if(_.where($scope.structureCreateArray[$index],{name:currentName}).length == 0){//if no item on level four with name "Documents" then make it
+          var newAsset = {
+            name:currentName,
+            type:type
+          }
+
+          if(currentParentName != null){// if there is a parent name, replace it with its position in the previous level's array, so it can be found in the results later
+            var parentAsset = _.where($scope.structureCreateArray[$index-1],{name:currentParentName})[0];
+            var parentPosition = $scope.structureCreateArray[$index-1].indexOf(parentAsset);
+            newAsset.parent = parentPosition;
+          }else{
+            newAsset.parent = null;
+          }
+
+          $scope.structureCreateArray[$index].push(newAsset);  
+        }
+
+        currentParentName = currentName;//set the parent name to this name
+      }//end check format
+    }//end check brackets
+
+    //BUILD HEADINGS OBJECT
+    if(!checkPointer.hasOwnProperty(pageStr)){//if there's no object here then make it
+      checkPointer[pageStr] = {};
+    }
+    checkPointer = checkPointer[pageStr] //point to this attribute now
   });
 }
 
-$scope.iaObjToHtml = function(obj,level) {
+
+$scope.structureCreateBtnCreate = function(){
+  $scope.structureCreateBtnCreateStepOne();
+}
+
+$scope.functionsArray = [];
+$scope.structureCreateResults = [];
+$scope.structureCreateBtnCreateStepOne = function(finalCallback){
+  $scope.loaderOne.total = $scope.structureCreateArray.length + 2;
+  $scope.loadingStart('Creating structure...');
+
+  $scope.functionsArray = [];
+  $scope.structureCreateResults = [];
+
+  _.each($scope.structureCreateArray,function(assetsRow){
+    var levelFunction = function(index,results){
+      var newBatch = [];
+      if(results){//only first level will have no results
+        newBatch = $scope.structureCreateMakeBatchFunctions(assetsRow,results); //pass to the next function
+      }else{
+        newBatch = $scope.structureCreateMakeBatchFunctions(assetsRow);
+      }
+
+      $scope.loadingStart('Creating level ' + String(index + 1) + ' assets...');
+      $scope.executeBatchFunctions(newBatch,function(funcResults) {
+        $scope.structureCreateResults.push(funcResults);
+        //put root node assets in resultAssets array
+
+        if($scope.functionsArray[index+1]){//go to next function
+          $scope.functionsArray[index+1](index+1,funcResults);
+        }else{//finished
+          $scope.structureCreateBtnCreateStepTwo();
+        }
+      });
+    }
+
+    $scope.functionsArray.push(levelFunction);
+  })
+
+  $scope.loaderOne.total = $scope.functionsArray.length + 2;
+
+  $scope.functionsArray[0](0);
+}
+
+$scope.structureCreateBtnCreateStepTwo = function(){
+  $scope.errorCheckResults(
+    $scope.structureCreateResults,
+    function(results, successCount) {
+      $scope.message('success','All ' + successCount + ' assets created...',results);  
+    },
+    function(results, errorCount, successCount) {
+      $scope.message('warning', successCount + ' assets created with '+ errorCount +' errors...',results);  
+    },
+    function(results) {
+      $scope.message('error-true','Did not create any assets due to an error...',results);  
+    }
+  );
+
+  var resultIds = [];
+  _.each($scope.structureCreateResults, function(resultSet) {
+    _.each(resultSet, function(result) {
+      if(result.id) {
+        resultIds.push(result.id);
+      }
+    });
+  });
+
+  $scope.getData({"assetIds":resultIds});
+
+  //TODO get data of all the ids from the results
+  $scope.loading = false;
+  $scope.message('success',"All " + resultIds.length + " assets created...",$scope.structureCreateResults);
+}
+
+$scope.structureCreateMakeBatchFunctions = function(assetsRow,results){
+
+  /*
+    structure of assets row is 
+    [
+      {name:"Where We Are",parent:2,type:'page_standard'},
+      {name:"Opening Hours",parent:2,type:'page_standard'},
+      {name:"Location",parent:1,type:'page_standard'}
+    ]
+  */
+
+  var batchFunctionsArray = [];
+
+  //get all different asset typesout of assetRow
+
+  //for each asset type make chunked batch
+
+  var assetsArrayOfArrays = $scope.divideArray(assetsRow);
+
+  _.each(assetsArrayOfArrays,function(array,$index){
+    if(results){//if there's results passed, then this level will be made based on those results
+      batchFunctionsArray.push($scope.structureCreateMakeBatchFunctionsChunk(array,results));//needs ALL the results as the parent could be any one of them
+    }else{
+      batchFunctionsArray.push($scope.structureCreateMakeBatchFunctionsChunk(array));
+    }
+  })
+
+  return batchFunctionsArray;
+}
+
+
+
+$scope.structureCreateMakeBatchFunctionsChunk = function(assets,results){
+  var batchFunctions = {};
+
+  for(var n = 0;n < assets.length;n++) {
+    var newFunction = {
+      "function":'createAsset',
+      "args":{
+        "type_code":assets[n].type,
+        "asset_name":assets[n].name
+      },
+      "blocking":0
+    };
+
+    if(results){
+      newFunction.args.parent_id = results[assets[n].parent].id;
+    }else{
+      newFunction.args.parent_id = $scope.structureCreateTxtRoot;
+    }
+
+    batchFunctions[String(n)] = newFunction;
+  };
+
+  return batchFunctions;
+}
+
+
+/*****************************************************************/
+/************************  5.3 IA Convert  *************************/
+/*****************************************************************/
+
+$scope.iaTxtCsv = 'Home\nAbout Us\nContact\nContact,Where We Are\nContact,Opening Hours,Sydney\nContact,Opening Hours,Melbourne\nAbout Us,Location\nNames,George';
+$scope.iaStructureObject = {};
+$scope.iaStructureHtml = '';
+$scope.iaBtnConvert = function() {
+  $scope.iaStructureObject = {};
+  $scope.iaStructureHtml = '';
+  var rows = $scope.iaTxtCsv.split('\n');
+
+  _.each(rows,function(rowStr,$index) {
+    var row = rowStr.replace(/^\s+|\s+$/g,'');//remove whitespace
+    if(row != '') {
+      $scope.iaCsvLoadRow(row,$index);
+    }
+  });
+
+  $scope.iaObjToHtml($scope.iaStructureObject,1);
+
+
+  $scope.message('success',"Here's your site structure creation HTML...",$scope.iaStructureHtml);
+};
+
+$scope.iaCsvLoadRow = function(rowString,rowIndex) {
+  var pages = rowString.split(','); //Contact,Opening Hours,Sydney
+  var checkPointer = $scope.iaStructureObject;
+  var currentParentName = null;
+
+  _.each(pages,function(pageStr,$index) {
+    //BUILD HEADINGS OBJECT
+    if(!checkPointer.hasOwnProperty(pageStr)){//if there's no object here then make it
+      checkPointer[pageStr] = {};
+    }
+    checkPointer = checkPointer[pageStr] //point to this attribute now
+  });
+}
+
+$scope.iaObjToHtml = function(obj, level) {
   for (var key in obj) {
      if (obj.hasOwnProperty(key)) {
-        for(var t = 1;t<level;t++) {$scope.iaPreparedHTML += '\t'}
-        $scope.iaPreparedHTML += ('<h'+level+'>' + key.replace(/^\s+|\s+$/g,'') + '</h'+level+'>');
-        $scope.iaPreparedHTML += '\n';
+        for(var t = 1;t<level;t++) {$scope.iaStructureHtml += '\t'}
+        $scope.iaStructureHtml += ('<h'+level+'>' + key.replace(/^\s+|\s+$/g,'') + '</h'+level+'>');
+        $scope.iaStructureHtml += '\n';
         $scope.iaObjToHtml(obj[key],level+1);
      }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*****************************************************************/
@@ -4284,8 +4681,11 @@ $scope.iaObjToHtml = function(obj,level) {
 /*****************************************************************/
 /*****************************************************************/
 
-$scope.chunkAmount = '10';
-
+    $scope.chunkType = 'flexible';
+    $scope.chunkManualAmount = '10';
+    $scope.chunkFlexibleMin = '3';
+    $scope.chunkFlexibleMax = '20';
+    $scope.chunkFlexibleDivisionAmount = '10';
 
 
 }); //end ControllerMain
