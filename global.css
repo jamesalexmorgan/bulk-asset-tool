@@ -85,7 +85,10 @@
     
   }        
 
-    #asset-table tr th{position:relative;}        
+    #asset-table tr th{
+      position:relative;
+      vertical-align: middle;
+    }
     #asset-table tr td label{font-weight:normal;}        
 
     #asset-table tr th.select{width:30px;text-align: center;}
@@ -98,11 +101,12 @@
     #asset-table tr td.remove{text-align: center;}        
 
     #asset-table tr th.sorting-true .sort-triangle{
-      width:0;
-      height:0;
-      position:absolute;
-      top:10px;
-      right:7px;
+      width: 0;
+      height: 0;
+      position: absolute;
+      top: 50%;
+      margin-top: -5px;      
+      right: 7px;
       border-top: 0px solid transparent;
       border-right: 6px solid transparent;
       border-bottom: 10px solid #ccc;
@@ -110,9 +114,9 @@
     }
 
         #asset-table tr th.sorting-true.sort-reverse-true .sort-triangle{
-              -webkit-transform:rotate(180deg);
-              -o-transformrotate(180deg); 
-              transform:rotate(180deg);
+          -webkit-transform:rotate(180deg);
+          -o-transformrotate(180deg); 
+          transform:rotate(180deg);
         }
 
 #footer-panel{
