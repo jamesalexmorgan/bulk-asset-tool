@@ -1,14 +1,30 @@
 <!-- 
 IMPROVEMENTS
 
+INITIALISE:
+- check if API is working
+- see if you have permissions
+- get asset types
+- get asset tree??
+
+USEFUL! Can store PARENTS 
+Use get asset tree to find all assets parents
+
+SEARCH
+- 3chars or more, do search
+
+DEPLOYMENT
+- Make it so you can type in the API key and js api assetid, 
+- It checks them for you and lets you know if they're valid
+- If valid, it remembers those details in cookies for the next time you use it
+
 CREATING ASSETS
-DONE - REVERSE ALL CREATION - so it appears in the correct order in the asset tree
-- set initial attributes, eg calendar events need start date
-   - don't need to make user aware, can just set todays date for now
-
-
+- initial attributes: make start date mandatory for single_calendar_event e.g.
 
 DATA TABLE
+- Fields - update available display fields if any assets are removed
+    - "Refresh fields" button
+- IF there's no field for an asset, grey it out in the table
 - Individual date formatting, date coming in interpreted wrong sometimes e.g. '01/05' should be Jan 2005
  - Add a date modifier to any field [checkbox enable][dropdown fields][text format][button remove]
 
@@ -18,21 +34,15 @@ LOADING
 ERROR CHECKING
 - maybe timeout to check if the jsAPI broke
 
-LOAD ASSETS
-- Choose levels when cascading down
-
 BULK CSV
-- KEYWORDS IN VALUES!!
-   - Keyword modifiers? maybe not
-- Decide the divider for the BULK CSVs (needed for saving content) ****
 - trim white space from values
 
+
 PROBLEMS
-
 Check for setting attributes for files eg title
+-->
 
- -->
-
+<script src="./?a=77"></script><!-- Matrix API -->
 <script>
 var siteRoot = 'http://syd-prodvm-matrix06.syd.squiz.net.au';
 var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
@@ -42,7 +52,6 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 <link rel="stylesheet" href="./?a=94" type='text/css' media="screen" /> <!-- jquery ui css -->
 <link rel="stylesheet" href="./?a=442" type='text/css' media="screen" /> <!-- global css -->
 
-<script src="./?a=77"></script><!-- Matrix API -->
 <script src="./?a=89"></script><!-- jquery-1.10.2.js -->
 <script src="./?a=90"></script><!-- jquery-ui-1.10.4.custom.min.js -->
 <script src="./?a=88"></script><!-- bootstrap.min.js -->
@@ -54,8 +63,34 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
 
 <div class="loading-{{loading}} assets-{{assets.length}}" ng-app="bulkAssetApp" ng-controller="ControllerMain">
+    <div id="logo" class="sidebar">
+      <img class="squiz-img" src="http://www.squiz.net/__data/assets/image/0014/356/logo-sm.png"/>
+      <h1 class="bat-title">B<span>ulk</span> A<span>sset</span> T<span>ool</span></h1>
+    </div>
 
-    <div id="rhc" class="showing-{{(assets.length > 0)}}" ng-click="cpanel.showing = false">
+    <div id="lhc" class="sidebar showing-{{(assets.length > 0)}}" ng-click="cpanel.showing = false">
+      
+      <div id="display-fields" class="form-inline">
+        <h4>Display fields</h4>
+        <div class="form-group">
+          <select class="form-control" size="10" ng-model="fieldsDisplay" ng-options="field | metadataFieldNameFormat:true for field in fields" multiple="multiple"></select>
+        </div>
+      </div><!-- end #display-fields -->
+
+      <div id="dates" class="form-inline">
+        <h4>Dates</h4>
+        <div class="form-group">
+          <input type="checkbox" ng-model="prettyDates"> Format dates
+          <span class="showing-{{prettyDates}}" style="display:block;">
+            <input type="checkbox" ng-model="prettyDatesManual"> Manual format <br>
+            <span class="showing-{{prettyDatesManual}}" style="display:block;"><input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. Do MMM 'YY"/></span>
+          </span>
+        </div>
+      </div><!-- end #dates -->
+    </div><!-- end #lhc -->
+
+
+    <div id="rhc" class="sidebar showing-{{(assets.length > 0)}}" ng-click="cpanel.showing = false">
       <div id="search" class="form-inline">
         <h4>Search <span class="showing-{{searchTxt != ''}}">({{searchedAssets.length}} items)</span></h4>
         <div class="form-group">
@@ -74,45 +109,27 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
         <h4>Sorting</h4>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[0]" ng-change="sort.changed(0)" ng-options="f.name for f in fields"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[0]" ng-change="sort.changed(0)"/>
+          <input type="checkbox" title="Descending checkbox" ng-model="sort.directions[0]" ng-change="sort.changed(0)"/>
           <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(0)" ng-disabled="sort.fields.length < 2">x</a> 
         </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[1]" ng-change="sort.changed(1)" ng-options="f.name for f in fields" ng-disabled="sort.fields.length < 1"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[1]" ng-change="sort.changed(1)" ng-disabled="sort.fields.length < 2"/>
+          <input type="checkbox" title="Descending checkbox" ng-model="sort.directions[1]" ng-change="sort.changed(1)" ng-disabled="sort.fields.length < 2"/>
           <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(1)" ng-disabled="sort.fields.length < 2">x</a> 
         </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[2]" ng-change="sort.changed(2)" ng-options="f.name for f in fields" ng-disabled="sort.fields.length < 2"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[2]" ng-change="sort.changed(2)" ng-disabled="sort.fields.length < 3"/>
+          <input type="checkbox" title="Descending checkbox" ng-model="sort.directions[2]" ng-change="sort.changed(2)" ng-disabled="sort.fields.length < 3"/>
           <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(2)" ng-disabled="sort.fields.length < 3">x</a> 
         </div>
         <div class="form-group">
           <select class="form-control" ng-model="sort.fields[3]" ng-change="sort.changed(3)" ng-options="f.name for f in fields" ng-disabled="sort.fields.length < 3"></select>
-          <input type="checkbox" title="Reverse" ng-model="sort.directions[3]" ng-change="sort.changed(3)" ng-disabled="sort.fields.length < 4"/>
+          <input type="checkbox" title="Descending checkbox" ng-model="sort.directions[3]" ng-change="sort.changed(3)" ng-disabled="sort.fields.length < 4"/>
           <a href="#" class="btn btn-default btn-sm" ng-click="sort.remove(3)" ng-disabled="sort.fields.length < 4">x</a> 
         </div>
-      </div><!-- end #sorting -->
-
-     
-
-      <div id="display-fields">
-        <h4>Display fields</h4>
-        <div class="form-group">
-          <select class="form-control" size="10" ng-model="fieldsDisplay" ng-options="field | metadataFieldFormat for field in fields" multiple="multiple"></select>
-        </div>
-        <div class="form-group">
-          <input type="checkbox" ng-model="prettyDates"> Format dates
-          <span class="showing-{{prettyDates}}" style="display:block;">
-            <input type="checkbox" ng-model="prettyDatesManual"> Manual format <br>
-            <span class="showing-{{prettyDatesManual}}" style="display:block;"><input class="form-control" type="text" ng-model="prettyDateFormat" placeholder="e.g. dd/MM/yyyy"/></span>
-          </span>
-        </div>
-        <!--div class="form-group">
-          <select class="form-control" size="5" ng-model="fieldsDisplay" ng-options="field | metadataFieldFormat for field in fields" multiple="multiple"></select>
-        </div-->
-      </div><!-- end #display-fields -->
+      </div><!-- end #sorting -->     
     </div><!-- end #rhc -->
+
 
 
 
@@ -126,8 +143,6 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
     <div id="wrapper" ng-click="cpanel.showing = false">
 
         <div id="asset-selection">
-          <h2>Bulk Asset Tool</h2>
-
           <div id="content" class="showing-{{(assets.length > 0)}}">
               <div class="top-tools">
                 <div class="left">
@@ -148,7 +163,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                     <div class="sort-triangle"></div>
                   </th>
                   <th class="table-column-{{field}} sorting-{{(sort.fields.indexOf(field) != -1)}} sort-reverse-{{sort.directions[sort.fields.indexOf(field)]}}" ng-repeat="field in fieldsDisplay | orderBy:field">
-                    <a href="" title="Sort by {{field}}" ng-click="sort.newSortBy(field)">{{field | metadataFieldFormat}}</a>
+                    <a href="" title="Sort by {{field}}" ng-click="sort.newSortBy(field)">{{field | metadataFieldNameFormat}}</a>
                     <div class="sort-triangle"></div>
                   </th>
                   <th class="remove">Remove</th>
@@ -162,7 +177,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                       <label for="asset-{{asset.id}}"><img width="16" height="16" class="sq-icon" title="{{asset.type_code}}" alt="" src="{{siteRoot}}/__data/asset_types/{{asset.type_code}}/icon.png"></label>
                     </td>
                     <td>
-                      <label for="asset-{{asset.id}}"><img src="{{siteRoot}}/__lib/web/images/blank.gif" width="10" height="10" alt="{{asset.status}}" title="{{asset.status}}" align="absmiddle" style="border: 1px solid #ccc; background-color: #{{asset.status | statusColor:matrixAssetStatuses}}"></label>
+                      <label for="asset-{{asset.id}}"><img width="10" height="10" alt="{{asset.status}}" title="{{asset.status}}" align="absmiddle" style="background-color: #{{asset.status | statusColor:matrixAssetStatuses}}"></label>
                     </td>
                     <td class="id"><a title="Preview asset {{asset.id}} in new tab" href="{{asset.web_path}}" target="_blank">{{asset.id}}</a></td>
                     
@@ -210,7 +225,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="col-sm-3 control-label" for="parentAssetId">Extra attribute on create</label>
+                  <label class="col-sm-3 control-label" for="parentAssetId">Extra attribute</label>
                   <div class="col-sm-8">
                     <input style="display:inline;" name="createAddField" type="checkbox" ng-model="createAddField" /> 
                     <span class="showing-inline-{{createAddField}}">Field: <input class="form-control" style="width:100px;display:inline;" name="createExtraAttField" type="text" ng-model="createExtraAttField" /> </span>
@@ -224,7 +239,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="col-sm-3 control-label">Create type</label>
+                  <label class="col-sm-3 control-label">Create Type</label>
                   <div class="col-sm-8">
 
                     <div class="radio">
@@ -273,7 +288,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
                     <div class="checkbox">
                       <label>
-                        <input type="checkbox" ng-model="createBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                        <input type="checkbox" ng-model="createBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions first)
                       </label>
                     </div>
 
@@ -287,22 +302,25 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
               <div class="col-sm-8">
                 <form role="form">
                   <div class="form-group">
-                    <label for="structureCreateTxtRoot">Root node id
+                    <label for="structureCreateTxtRoot">Parent Asset Id
                       <input type="text" id="structureCreateTxtRoot" class="form-control" ng-model="structureCreateTxtRoot" />
                     </label>
                   </div> 
 
                   <div class="form-group">
+                    <div class="right" style="text-align:right;">
+                    Divider <input style="display:inline;width:20px;" type="text" ng-model="structureCreateDivider">
+                    </div>                    
                     <label for="structureCreateTxtCsv">Structure CSV</label>
                     <textarea wrap="off" id="structureCreateTxtCsv" class="form-control" rows="7" ng-model="structureCreateTxtCsv" ng-change="structureCreateReady = false"></textarea>
                   </div> 
                   <div class="form-group">
-                    <label for="structureCreateTxtCsv">Available asset types</label>
+                    <label for="structureCreateTxtCsv">Available Asset Types</label>
                     <select id="structureCreateTxtCsv" class="form-control">
                       <option ng-repeat="code in loadAssetsTypeCodes | orderBy:'name'" value="{{code.id}}" >{{code.name}} ({{code.id}})</option>
                     </select>
                   </div>                   
-                  <button type="submit" ng-click="structureCreateBtnCheck()" class="btn btn-primary btn-lg">Load CSV</button>
+                  <button type="submit" ng-click="structureCreateBtnCheck()" class="btn btn-primary btn-lg">Check CSV</button>
                   <button type="submit" ng-click="structureCreateBtnCreate()" class="btn btn-primary btn-lg showing-{{structureCreateReady}}">Create structure</button>
                 </form> 
               </div>              
@@ -330,8 +348,6 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
               </div>
             </div>
 
-
-
           </div> <!-- end .inner-tabs -->
       </div>
 
@@ -343,18 +359,22 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
             <div class="form-group">
               <label for="asset-ids">Asset Ids</label>
               <textarea id="asset-ids" class="form-control" rows="13" ng-model="loadAssetIdsString" placeholder="A csv of asset ids please... e.g. 34567,8765,73738,94949...." ></textarea>
-              <input type="checkbox" ng-model="loadAssetsCascade"> Cascade
-              <span class="include-roots showing-{{loadAssetsCascade}}"><input type="checkbox" ng-model="loadAssetsIncludeRoots"> Include roots   <input type="checkbox" ng-model="loadAssetsTypeCodesEnabled"> Limit types</span>
+              Cascade <input type="checkbox" ng-model="loadAssetsCascade">  
+              <span class="include-roots showing-{{loadAssetsCascade}}">
+                Levels <input style="width:15px;" type="text" ng-model="loadAssetsLevels" title="How far down into the tree you want to load (0 for infinite)">  
+                Include roots <input type="checkbox" ng-model="loadAssetsIncludeRoots">   
+                Limit types<input type="checkbox" ng-model="loadAssetsTypeCodesEnabled">
+              </span>
             </div>
             <button type="submit" ng-click="getData()" class="btn btn-primary btn-lg">Load assets</button>
-            <input type="checkbox" ng-model="loadAssetsGetMetadata"> Get Metadata
+            <input type="checkbox" ng-model="loadAssetMetadata"> Load metadata
           </form>
         </div>
 
         <div class="col-sm-5">
           <form class="showing-{{loadAssetsTypeCodesEnabled}} showing-{{loadAssetsCascade}}" role="form">
             <div class="form-group">
-              <label for="loadAssetsTypeCodesSelected">Limited type codes:</label>
+              <label for="loadAssetsTypeCodesSelected">Limited asset type codes:</label>
               <select id="type-codes-selected" class="form-control" name="loadAssetsTypeCodesSelected" multiple="multiple" ng-model="loadAssetsTypeCodesSelected" ng-options="code.name for code in loadAssetsTypeCodes | orderBy:'name'" size="15"></select><br>
               <span class="bold" ng-repeat="code in loadAssetsTypeCodesSelected">{{code.name}}, </span>
             </div>
@@ -414,7 +434,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
       <div id="tab-4-content" class="footer-panel-content active-{{cpanel.tabStatuses[4]}}">
           <div class="inner-tab-buttons">
-            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[4][1]}}" ng-click="cpanel.changeTab(4,1)">Action</div>
+            <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[4][1]}}" ng-click="cpanel.changeTab(4,1)">Function</div>
             <div class="footer-inner-tab-button active-{{cpanel.innerTabStatuses[4][2]}}" ng-click="cpanel.changeTab(4,2)">Bulk CSV Change</div>
           </div>
 
@@ -424,7 +444,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
                 <form role="form">
                   <div class="form-group">
-                    <label for="selectedAction">Action</label>
+                    <label for="selectedAction">Function</label>
                     <select class="form-control" name="selectedAction" ng-model="selectedAction" ng-options="action.name for action in actionsList | orderBy:'name' | filter:{disabled:false}" ng-disabled="action.disabled" ng-change="selectedActionChanged()"></select>
                     <br>
                   </div>
@@ -444,10 +464,10 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                     </div>  
                   </div>
 
-                  <button type="submit" class="btn btn-primary" ng-click="executeActions()">Execute actions</button> 
+                  <button type="submit" class="btn btn-primary" ng-click="executeActions()">Execute</button> 
                   <div class="checkbox">
                     <label>
-                      <input type="checkbox" ng-model="actionsBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                      <input type="checkbox" ng-model="actionsBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions first)
                     </label>
                   </div>
                   
@@ -455,7 +475,10 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
               </div>
 
               <div class="col-sm-9 showing-{{selectedAction != null}}">
-                  <table class="action-fields">
+
+                  <p ng-if="selectedAction.assetVarName == null">No vars can be set for this function. Just execute.</p>
+
+                  <table class="action-fields showing-inline-{{selectedAction.assetVarName != null}}">
                     <thead>
                       <th class="field" title="Name of the field">Field</th>
                       <th class="set" title="Weather or not to set a value to this field, some fields are required to be set">Set</th>
@@ -484,13 +507,32 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                         (<span class="bold">{{var.type}}</span>) {{var.note | limitTo:70}}<span class="showing-inline-{{var.note.length > 70}}">...</span> <span class="bold showing-{{var.csv}}">({{var.val.split(',').length}} values)</span>
                       </td>
                     </tr>
+                    <tr class="action-var">
+                      <td>Blocking</td>
+                      <td><input type="checkbox" ng-model="selectedAction.blocking"> </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr class="action-var">
+                      <td>Available keywords</td>
+                      <td colspan="4">
+                        <select name="" class="form-control">
+                          <option value="x">-- Have a look --</option>
+                          <optgroup label="Special keywords">
+                            <option value="index" >%index% -> 1...2...3...4</option>
+                            <option value="randomnumber" >%randomnumber:1:100:ddd% -> 001 009 003 100 099</option>
+                          </optgroup>
+                          <optgroup label="Keyword modifiers">
+                            <option value="replace" >%name^replace:John:JOHN% -> John Smith -> JOHN Smith</option>
+                          </optgroup>
+                          <optgroup label="Attributes and metadata">
+                            <option value="field.id" ng-repeat="field in fields">{{field | metadataFieldNameFormat}} - %{{field | metadataFieldIdFormat}}% </option>
+                          </optgroup>
+                        </select>
+                      </td>
+                    </tr>
                   </table>
-
-                  <div class="checkbox">
-                    <label>
-                      <input type="checkbox" ng-model="selectedAction.blocking"> Blocking
-                    </label>
-                  </div>
                 
               </div>
 
@@ -499,6 +541,10 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
             <div class="inner-tab-content active-{{cpanel.innerTabStatuses[4][2]}}" >
               <div class="col-sm-6">
+                <div class="right" style="text-align:right;">
+                Divider <input style="display:inline;width:20px;" type="text" ng-model="csvChangeDivider">
+                </div>
+
                 <form role="form">
                   <div class="form-group">
                     <label for="asset-ids">CSV</label>
@@ -506,35 +552,58 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
                     </textarea>
                   </div> 
                   <button type="submit" ng-click="csvChangeBtnCheckForChanges()" class="btn btn-default">Check for changes</button>&nbsp;
-                  <span class="showing-{{csvChangeAssetsLoaded}}" title="Reload data from Matrix for all the CSVs asset ids"><input type="checkbox" ng-model="bulkCsvReload"> Reload</span>
+                  <span class="showing-{{csvChangeAssetsLoaded}}" title="Reload data from Matrix for all the CSVs asset ids"><input type="checkbox" ng-model="csvChangeReload"> Reload</span>
                   <br><br>
                   <div class="showing-{{csvChangeChanges.length > 0}}">
+
                     <button type="submit" ng-click="csvChangeBtnExecuteChanges()" class="btn btn-primary btn-lg" ng-disabled="!csvChangeChangesChecked">Make changes</button> 
-                    <input type="checkbox" ng-model="csvChangeChkBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions without executing them, recommended before executing)
+                    <input type="checkbox" ng-model="csvChangeChkBatchFunctionsTest"> <span class="bold">Test</span> (See prepared batch functions first)
 
                   </div>
-                </form> 
+                </form>
+                  Available keywords 
+                  <select name="" class="form-control">
+                    <option value="x">-- Have a look --</option>
+                    <optgroup label="Special keywords">
+                      <option value="index" >%index% -> 1...2...3...4</option>
+                      <option value="randomnumber" >%randomnumber:1:100:ddd% -> 001 009 003 100 099</option>
+                    </optgroup>
+                    <optgroup label="Keyword modifiers">
+                      <option value="replace" >%name^replace:John:JOHN% -> John Smith -> JOHN Smith</option>
+                    </optgroup>
+                    <optgroup label="Attributes and metadata">
+                      <option value="field.id" ng-repeat="field in fields">{{field | metadataFieldNameFormat}} - %{{field | metadataFieldIdFormat}}% </option>
+                    </optgroup>
+                  </select>                
               </div>
-              <div class="col-sm-6 showing-{{csvChangeChanges.length > 0}}">
-                <p class="bold">Changes to be made...</p>
-                <table style="width:100%;">
-                  <thead>
-                    <tr>
-                      <th>Asset</th>
-                      <th>Field</th>
-                      <th>From</th>
-                      <th>To</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr ng-repeat="change in csvChangeChanges">
-                      <td>{{change.id}}</td>
-                      <td>{{change.field}}</td>
-                      <td>"{{change.from}}"</td>
-                      <td>"{{change.to}}"</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="col-sm-6 showing-{{csvChangeAssetsLoaded}}">
+                <p class="bold">Changes to be made (<strong>{{csvChangeChanges.length}}</strong>)...</p>
+
+                <div style="overflow: scroll; max-height: 410px;">
+                  <table style="width:100%;" class="showing-{{csvChangeChanges.length > 0}} table table-bordered table-striped table-hover table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Asset</th>
+                        <th>Field</th>
+                        <th>From</th>
+                        <th>To</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr ng-repeat="change in csvChangeChanges">
+                        <td>{{change.id}}</td>
+                        <td>{{change.field}}</td>
+                        <td title="{{change.from}}">{{change.from | limitTo:10 }}...</td>
+                        <td title="{{change.to}}">{{change.to | limitTo:10 }}...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p class="showing-{{csvChangeChanges.length == 0}}">None</p>
+                </div>
+                <p style="text-align: right;color: #999;">(Scrollbox)</p>
+                
+                <p><strong>NOTE</strong>: Hover on <strong>From</strong> and <strong>To</strong> values to see whole value</p>
+
               </div>
             </div>
 
@@ -547,20 +616,6 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
         <div class="col-sm-4">
           <form class="form-horizontal" role="form">
-<!--             <div class="form-group">
-                <label class="col-sm-5" for="apiKey">API key</label>
-                <div class="col-sm-7">
-                  <input id="apiKey" class="form-control" type="text" disabled="disabled">
-                </div>
-            </div> -->
-
-            <div class="form-group">
-                <label class="col-sm-5" for="chunkType">Reverse asset create order</label>
-                <div class="col-sm-7">
-                  <input type="checkbox" ng-model="createFunctionsReversed"/>
-                  So that the assets appear in the correct order in the tree -&gt; Asset 1, Asset 2 etc.
-                </div>
-            </div> 
 
             <div class="form-group">
                 <label class="col-sm-5" for="chunkType">chunkType</label>
@@ -602,6 +657,14 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 
         <div class="col-sm-4">
           <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-5" for="chunkType">Reverse asset create order</label>
+                <div class="col-sm-7">
+                  <input type="checkbox" ng-model="createFunctionsReversed"/>
+                  So that the assets appear in the correct order in the tree -&gt; Asset 1, Asset 2 etc.
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="col-sm-3" for="apiKey">Fav. asset types (<span>{{loadAssetsTypeCodes.length}} selected</span>)</label>
                 <div class="col-sm-9">
@@ -664,7 +727,7 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 *         1.3.2 prettifyDate
 *         1.3.3 idsString
 *         1.3.4 statusColor
-*         1.3.5 metadataFieldFormat
+*         1.3.5 metadataFieldNameFormat
 *       1.4 Factories
 *       1.5 DECLARING CONTROLLER
 *     
@@ -681,7 +744,9 @@ var jsAPI = new Squiz_Matrix_API({ 'key': '6960446740'});
 *       3.4 divideArray
 *       3.5 removeFromArray
 *       3.6 executeBatchFunctions
-*     
+*       3.7 Chunk Batch Functions
+*       3.8 Keywords replacement    
+* 
 *     4. User Interface  
 *       4.1 Loading overlay  
 *       4.2 Selected Assets
@@ -795,7 +860,7 @@ bulkAssetApp.filter('prettifyJson', function() {
 
 bulkAssetApp.filter('prettifyDate', function() {
   return function(string,format,enabled,manualFormat) {
-    if(enabled) {
+    if(enabled && string) {//string empty produces now so avoid that
       var date = null;
 
       if(String(string).match(/\d{10}/) != null) { //if 10 digit unix format
@@ -850,20 +915,42 @@ bulkAssetApp.filter('statusColor', function() {
 });
 
 
-/*********************  1.3.5 metadataFieldFormat  *************************/
+/*********************  1.3.5 metadataFieldNameFormat  *************************/
 
-bulkAssetApp.filter('metadataFieldFormat', function() {
+bulkAssetApp.filter('metadataFieldNameFormat', function() {
+  return function(field,showId) {
+    if(field.isMetadata) {
+      if(field.meta_id) {
+        return field.id + ' (#' + field.meta_id + ')';
+      }else{
+        return field.id + ' (#??Deleted??)'; //very unlikely, assets, still have field.meta_id
+      }
+
+      return field.id + ' (#' + field.meta_id + ')';
+    }else{
+      var returnVal = field.name;
+      if(showId){
+        return field.name + ' (' + field.id + ')'}
+      else{
+        return field.name;
+      }
+      
+    }
+  };
+});
+
+/*********************  1.3.5 metadataFieldIdFormat  *************************/
+
+bulkAssetApp.filter('metadataFieldIdFormat', function() {
   return function(field) {
     if(field.isMetadata) {
       if(field.meta_id) {
-        return '(#' + field.meta_id + ') ' + field.id;
+        return field.meta_id;
       }else{
-        return '(#???) ' + field.id + ' (Deleted?)'; //very unlikely, assets, still have field.meta_id
+        return '?Deleted?'; //very unlikely, assets, still have field.meta_id
       }
-
-      return '(#' + field.meta_id + ') ' + field.id;
     }else{
-      return field.name;
+      return field.id;
     }
   };
 });
@@ -2553,6 +2640,8 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
           "name": "Move Link"
       },
       {
+
+          /* Made locked field required and set to 0 automatically because otherwise its set to 1 by default :S */
           "funcName": "updateLink",
           "assetVarName": "child_id",
           "vars": [
@@ -2575,8 +2664,8 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                   "type": "string",
                   "val": "",
                   "csv": false,
-                  "example": "My existing link_type",
-                  "note": "Existing link type between the assets (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+                  "example": "SQ_LINK_TYPE_1",
+                  "note": "Existing link type"
               },
               {
                   "required":false,
@@ -2587,7 +2676,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                   "val": "",
                   "csv": false,
                   "example": "My existing link_value",
-                  "note": "Existing link value between the assets  ('' by default)"
+                  "note": "Existing link val"
               },
               {
                   "required":false,
@@ -2597,8 +2686,8 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                   "type": "string",
                   "val": "",
                   "csv": false,
-                  "example": "My link type",
-                  "note": "Link type to be updated to (SQ_LINK_TYPE_1, SQ_LINK_TYPE_2, SQ_LINK_TYPE_3, or SQ_LINK_NOTICE)"
+                  "example": "SQ_LINK_TYPE_2",
+                  "note": "Link type to set"
               },
               {
                   "required":false,
@@ -2609,7 +2698,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                   "val": "",
                   "csv": false,
                   "example": "My link value",
-                  "note": "Link value to be updated to ('' by default)"
+                  "note": "Link val to set"
               },
               {
                   "required":false,
@@ -2623,15 +2712,15 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
                   "note": "The new position"
               },
               {
-                  "required":false,
-                  "requiredSet":false,
-                  "set":false,
+                  "required":true,
+                  "requiredSet":true,
+                  "set":true,
                   "name": "locked",
                   "type": "string",
-                  "val": "",
+                  "val": "0",
                   "csv": false,
-                  "example": "My locked",
-                  "note": "The asset link lock status (locked by default)"
+                  "example": "0",
+                  "note": "Link lock status"
               }
           ],
           "disabled": false,
@@ -3264,14 +3353,14 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
   /*********************  3.1 convertCsvToArray  **********************/
 
-  $scope.convertCsvToArray = function(csv) {
+  $scope.convertCsvToArray = function(csv,divider) {
     var array = [];
     var rows = csv.split('\n');//split csv up into rows
     _.each(rows,function(rowStr) {
       var rowArray = [];
       var row = rowStr.replace(/^\s+|\s+$/g,'');
       if(row != '') {
-        rowArray = rowStr.split(',');
+        rowArray = rowStr.split(divider);
         array.push(rowArray);
       }
     });
@@ -3281,9 +3370,9 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
   /*********************  3.2 checkValidCsv  **********************/
 
-  $scope.checkValidCsv = function(csv,errorCallback,successCallback) {
+  $scope.checkValidCsv = function(csv,divider,errorCallback,successCallback) {
     var errors = '';
-    var csvArray = $scope.convertCsvToArray(csv);
+    var csvArray = $scope.convertCsvToArray(csv,divider);
     var rowStrings = csv.split('\n');//split csv up into rows
     var topRowLength = 0;
 
@@ -3309,7 +3398,7 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
   /*********************  3.3 prettifyName  **********************/
 
   $scope.prettifyName = function(string) {
-    var newString = string.replace('_',' ');
+    var newString = string.replace(/_/g,' ');
     newString = newString.charAt(0).toUpperCase() + newString.slice(1);
     return newString;
   }
@@ -3352,15 +3441,22 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
   /*********************  3.6 executeBatchFunctions  **********************/
 
-  $scope.executeBatchFunctions = function(batchFunctionsChunked,callBack) {
-    var allResults = [];//concat all chunks' results to this array to diplay after
+  $scope.executeBatchFunctions = function(batchFunctions,callBack) {
+
+    var batchFunctionsChunked = [];
+
+    if(batchFunctions instanceof Array){//check for old technique where chunked functions came in so it doesn't 
+      batchFunctionsChunked = batchFunctions;
+    }else{
+      batchFunctionsChunked = $scope.batchFunctionsConvertToChunked(batchFunctions);
+    }
+
+
+    var totalBatchFunctions = Object.keys(batchFunctions).length;// just need the total number for loader 
     var noOfChunks = batchFunctionsChunked.length;
     var functions = [];
+    var allResults = [];//concat all chunks' results to this array to diplay after
 
-    var totalBatchFunctions = 0;// just need the total number for loader 
-    _.each(batchFunctionsChunked,function(batch) {
-      totalBatchFunctions += Object.keys(batch).length;
-    });
     var totalExecuted = 0;
 
     //if it's just one function (like getChildren), they're just gonna have to wait! So just show a full progress bar
@@ -3394,6 +3490,191 @@ bulkAssetApp.controller('ControllerMain', function($scope, $filter, jspAPIServic
 
     functions[0](0);//start executing
   }
+
+  /*********************  3.7 Chunk Batch Functions  **********************/
+
+  $scope.batchFunctionsConvertToChunked = function(batchFunctions){
+
+      var chunkSize = 0;
+      if($scope.chunkType == 'manual') {
+        chunkSize = Number($scope.chunkManualAmount);
+      }else{
+        chunkSize = Math.floor(Object.keys(batchFunctions).length / $scope.chunkFlexibleDivisionAmount);
+        var min = Number($scope.chunkFlexibleMin);
+        var max = Number($scope.chunkFlexibleMax);
+        if(chunkSize > max) chunkSize = max;
+        if(chunkSize < min) chunkSize = min;
+      }
+
+
+      var batchFunctionsChunked = [];
+      var newChunk = {};
+      var counter = 0;
+      _.each(batchFunctions,function(func,$index){
+        newChunk[String(counter)] = func;
+        if(Object.keys(newChunk).length == chunkSize){
+          batchFunctionsChunked.push(_.clone(newChunk));
+          newChunk = {};
+          counter = 0;
+        } else {
+          counter ++;
+        }
+      })
+      if(Object.keys(newChunk).length > 0) {//if the last one has some functions push it
+        batchFunctionsChunked.push(_.clone(newChunk));
+      }
+
+      return batchFunctionsChunked;
+  }
+
+
+
+
+/****************** 3.8 Keywords replacement  **************/
+
+
+  $scope.keywordModifiers = {
+    "replace":{
+      "varsRequired":2,
+      "func":function(string,varsArray){
+        /*
+          CHARACTER REPLACE
+            %{MY FIELD}^replace:{CHAR TO REPLACE}:{CHAR TO REPLACE WITH}%
+            - %replace:-: %   John-Smith --> John Smith
+            - %replace:John:JOHN%   John-Smith --> JOHN-Smith
+        */
+
+        return string.replace(new RegExp(varsArray[0],"g"),varsArray[1]);
+      }
+    }
+  };
+
+  $scope.keywordsSpecial = {
+    "randomnumber":{
+      "varsRequired":3,
+      "func":function(varsArray){
+
+        /*
+          RANDOM NUMBER GENERATOR to use in 
+            %randomnumber:{MAX}:{MIN}:{FORMAT}%
+            - %randomnumber:2:4:dd%      03 02 04
+            - %randomnumber:1:100:ddd%   001 009 003 100 099
+            - %randomnumber:1:28:d%      1 27 13 9 28 2        
+        */
+
+        var intFrom = Number(varsArray[0]); // 5
+        var intTo = Number(varsArray[1]); // 9
+        var intFormat = varsArray[2]; // 'ddd' 
+
+        var randomNo = String(Math.floor(Math.random() * (intTo-intFrom+1)) + intFrom);
+        if(randomNo.length < intFormat.length){
+          var zerosToAdd = intFormat.length - randomNo.length;
+          for(var x=0;x<zerosToAdd;x++){
+            randomNo = '0' + randomNo;
+          }
+        }
+
+        return randomNo;
+      }
+    }
+  };
+
+  $scope.keywordsReplace = function(stringVal,assetId,counter) {
+    var spliceStr = function(str, index, count, add) {
+      return str.slice(0, index) + add + str.slice(index + count);
+    }
+
+    //replace index if it's in there
+    stringVal = stringVal.replace(/%index%/g,String(counter+1));
+
+
+    var keywords = [];
+    //var noOfKeywordChars = stringVal.split("str").length - 1;
+
+
+
+      if(stringVal.indexOf('%') != -1) {
+
+        if((stringVal.split('%').length -1) % 2 == 0){//check theres an even amount of %s
+
+          //find any occurrances of the data field names in the 
+          var asset = _.where($scope.assets,{"id":Number(assetId)})[0];
+
+          //iterate through keywords ('.' in regexp means any char but a newline)
+          var patt=/%[^% ]+%/g;
+          var match = patt.exec(stringVal);
+
+          while (match) {
+            var keywordStartIndex = match.index;
+            var keywordString = match[0]; //--> %name^replace: :_^replace:Jhon:John%
+            var keywordStringLength = keywordString.length; //--> %name^replace: :_^replace:Jhon:John%
+
+            keywordString = keywordString.replace(/%/g,'');// remove first and last % --> name^replace: :_^replace:Jhon:John
+
+            var keywordSplit = keywordString.split('^'); // --> ['name','replace: :_','replace:Jhon:John']
+            var keywordMods = keywordSplit.splice(1); // --> ['replace: :_','replace:Jhon:John']
+            var keyword = keywordSplit[0]; // --> 'name' or randomnumber:1:28:ddd
+
+            var value = '';
+            _.each($scope.fields,function(field) {
+              if(field.isMetadata){
+                if(keyword == field.meta_id){
+                  value = asset[field.id];
+                }
+              }else{
+                if(keyword == field.id){
+                  value = asset[field.id];
+                }
+              }
+            });// value --> 'Jhon Smith'
+
+            //SPECIAL KEYWORDS      e.g. 'randomnumber:1:28:ddd'
+            if(value == ''){//if no value is set from the fields then check special keywords
+              var specialKeywordSplit = keyword.split(':');
+              var specialKeywordVars = specialKeywordSplit.splice(1); // --> ['replace: :_','replace:Jhon:John']
+              var specialKeyword = specialKeywordSplit[0]; // --> 'name' or randomnumber:1:28:ddd
+
+              if($scope.keywordsSpecial[specialKeyword]){
+                value = $scope.keywordsSpecial[specialKeyword].func(specialKeywordVars);
+              }
+            }
+
+            //now we're ready to do our modifiers
+
+            //MODIFIERS     e.g. 'replace:Jhon:John'
+            //only modify if theres something in the value and there's some modifiers
+            if(value != '' && keywordMods.length > 0){
+              _.each(keywordMods,function(modifierString){
+                //modifierString --> replace: :_
+                var modifierSplit = modifierString.split(':'); // --> ['replace',' ','_']
+                var modifierVars = modifierSplit.splice(1); // --> [' ','_']
+                var modifier = modifierSplit[0]; // --> 'replace'
+
+                if($scope.keywordModifiers[modifier] && $scope.keywordModifiers[modifier].varsRequired == modifierVars.length){//if this modifier exists and it has the right number of vars then do it!
+                  value = $scope.keywordModifiers[modifier].func(value,modifierVars);
+                }
+              });
+            }
+
+            //splice that part of the string out
+            stringVal = spliceStr(stringVal, keywordStartIndex, keywordStringLength, value)
+
+            patt=/%[^% ]+%/g;//need a new instance of patt, otherwise exec would cycle through :S
+            match = patt.exec(stringVal);//reset matches as the chars have moved around
+          };//end iterate through keywords
+
+
+
+        }//end odd no of % check
+
+      }//end check % present
+
+
+
+
+    return stringVal;
+  }
+
 
 
   /*****************************************************************/
@@ -3669,16 +3950,19 @@ PURPOSE
 
 
     $scope.loadType = 'ids';
-    $scope.loadAssetIdsString = "109";
+    $scope.loadAssetIdsString = "4044";
     $scope.loadAssetIds = [];
 
     $scope.loadAssetStepOneResultAssets = [];
     $scope.loadAssetStepTwoIds = []; //this will be loaded with the children of the step one if cascade is selected otherwise just the roots
 
     $scope.loadAssetsCascade = true;
+    $scope.loadAssetsLevels = 0;
     $scope.loadAssetsIncludeRoots = false;
     $scope.loadAssetsTypeCodesEnabled = true;
     $scope.loadAssetsTypeCodesSelected = [];
+
+    $scope.loadAssetMetadata = true;
 
     //load default type codes into selected
     _.each(userVarTypeCodesDefaults,function(def) {
@@ -3687,8 +3971,6 @@ PURPOSE
       });
       if(typeCode) $scope.loadAssetsTypeCodesSelected.push(typeCode);
     });
-
-    $scope.loadAssetsGetMetadata = true;
 
 /*****************************************************************/
 /**************************  5.2 Step One  *************************/
@@ -3719,7 +4001,7 @@ PURPOSE
         $scope.getChildrenFunctions = [];
         
 
-        var batchFunctionsChildrenAtts = {"get_attributes":1,"levels":0};
+        var batchFunctionsChildrenAtts = {"get_attributes":1,"levels":$scope.loadAssetsLevels};
         //if user has selected any type codes set them in the batch
         if($scope.loadAssetsTypeCodesEnabled && $scope.loadAssetsTypeCodesSelected.length) {
           var typeCodes = [];
@@ -3805,21 +4087,21 @@ PURPOSE
 
     //this step loads metadata
     $scope.getDataStepTwo = function(params) {
-      if($scope.loadAssetsGetMetadata) {
-        //get all ids first
-        var batchFunctionsMeta = $scope.makeBatchFunctions("getMetadata",{},$scope.loadAssetStepTwoIds);
-        //get metadata
-        $scope.loadingStart('Getting metadata...');
-        $scope.executeBatchFunctions(batchFunctionsMeta,function(results) {
-          $scope.loadAssetDataSet(results,true);
-          
-          $scope.getMetadataFields(function() {
-            $scope.getDataStepThree(params);
-          });          
-        });
-      }else{
-        $scope.getDataStepThree(params);
-      }
+        if($scope.loadAssetMetadata || (params && params.getMetadata)){
+          //get all ids first
+          var batchFunctionsMeta = $scope.makeBatchFunctions("getMetadata",{},$scope.loadAssetStepTwoIds);
+          //get metadata
+          $scope.loadingStart('Getting metadata...');
+          $scope.executeBatchFunctions(batchFunctionsMeta,function(results) {
+            $scope.loadAssetDataSet(results,true);
+            
+            $scope.getMetadataFields(function() {
+              $scope.getDataStepThree(params);
+            });          
+          });
+        }else{
+          $scope.getDataStepThree(params);
+        }
     }
 
 /*****************************************************************/
@@ -3842,19 +4124,6 @@ PURPOSE
 /*****************************************************************/
 
     $scope.makeBatchFunctions = function(funcName,attributes,assetIds) {
-
-      var arrayOfArraysIds = $scope.divideArray(assetIds);
-      var arrayOfArraysBatches = [];
-      _.each(arrayOfArraysIds,function(idsArray) {
-        arrayOfArraysBatches.push($scope.makeBatchFunctionsChunk(funcName,attributes,idsArray));
-      })
-
-      return arrayOfArraysBatches;
-    }
-
-
-
-    $scope.makeBatchFunctionsChunk = function(funcName,attributes,assetIds) {
 
         //builds the batch functions object depending on what you pass in
         var batchFunctions = {};
@@ -4050,9 +4319,10 @@ PURPOSE
     }
   }
 
+
 /*****************************************************************/
 /****************** 6.2 Execute actions function  **************/
-/*****************************************************************/
+/*****************************************************************/  
 
 
   $scope.executeActions = function() {
@@ -4101,14 +4371,9 @@ PURPOSE
       _.each($scope.selectedAction.vars,function(fieldVar) {
         valuesConcatenated += fieldVar.val + ' ';
       });
-      var fieldKeywords = [];
-      if(valuesConcatenated.indexOf('%') != -1) {
-        _.each($scope.fields,function(field) {
-          if(valuesConcatenated.indexOf('%'+field.id+'%') != -1) {
-            fieldKeywords.push(field.id);
-          }
-        });
-      }
+
+      //prepare keywords
+      //$scope.keywordsInUseGather(valuesConcatenated);
 
       //get all assetsActioningIds from assetsActioning array
       _.each(assetsActioning,function(asset) {
@@ -4119,7 +4384,7 @@ PURPOSE
 
     var batchFunctionsActionsExecute = [];
     if($scope.selectedAction.assetVarName != null) {
-      batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetsActioningIds,fieldKeywords);
+      batchFunctionsActionsExecute = $scope.prepareActionBatchFunctions(assetsActioningIds);
     }else{
       batchFunctionsActionsExecute = $scope.prepareActionBatchFunctionSingle();
     }
@@ -4177,56 +4442,44 @@ $scope.prepareActionBatchFunctionSingle = function() {
 }
 
 /******  6.3.2 Prepare batch functions (multiple)  ********/
-$scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
+$scope.prepareActionBatchFunctions = function(assetIds) {
 
-  var arrayOfArraysIds = $scope.divideArray(assetIds);
-  var arrayOfArraysBatches = [];
-  _.each(arrayOfArraysIds,function(idsArray) {
-    arrayOfArraysBatches.push($scope.prepareActionBatchFunctionsChunk(idsArray,fieldKeywords));
-  })
+  var batchFunctionsToExecute = {};
+  var counter = 0;
 
-  return arrayOfArraysBatches;
+  _.each(assetIds,function(assetId, index) {
+    var newFunction = {
+       "function":$scope.selectedAction.funcName,
+       "args":{}
+    };
+    //set the child_id/asset_id etc to the id of the asset
+    newFunction.args[$scope.selectedAction.assetVarName] = assetId;
+
+    //only add blocking until second last item
+    if(counter < (assetIds.length-1)) {
+      if($scope.selectedAction.blocking) {
+        newFunction.blocking = 1;
+      }else{
+        newFunction.blocking = 0;
+      }
+    }
+
+    $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId,index,counter);
+
+    batchFunctionsToExecute[String(counter)] = newFunction;
+    counter++;
+  });// end assets iteration
+
+  return batchFunctionsToExecute;
+
 }
-
-
-/******  6.3.3 Prepare chunk  ********/
-  $scope.prepareActionBatchFunctionsChunk = function(assetIds,fieldKeywords) {
-      var batchFunctionsToExecute = {};
-
-      var counter = 0;
-
-      _.each(assetIds,function(assetId, index) {
-        var newFunction = {
-           "function":$scope.selectedAction.funcName,
-           "args":{}
-        };
-        //set the child_id/asset_id etc to the id of the asset
-        newFunction.args[$scope.selectedAction.assetVarName] = assetId;
-
-        //only add blocking until second last item
-        if(counter < (assetIds.length-1)) {
-          if($scope.selectedAction.blocking) {
-            newFunction.blocking = 1;
-          }else{
-            newFunction.blocking = 0;
-          }
-        }
-
-        $scope.prepareActionBatchFunctionsSetVars(newFunction,assetId,index,fieldKeywords,counter);
-
-        batchFunctionsToExecute[String(counter)] = newFunction;
-        counter++;
-      });// end assets iteration
-
-      return batchFunctionsToExecute;
-  }
 
 
 
 
 
 /******  6.3.4 Set vars  ********/
-  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId,index,fieldKeywords,counter) {
+  $scope.prepareActionBatchFunctionsSetVars = function(newFunction,assetId,index,counter) {
 
         //we're only setting the vars that have set = true
         var setVars = _.where($scope.selectedAction.vars,{set:true});
@@ -4243,29 +4496,20 @@ $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
               if((variable['type'] == 'string' || variable['type'] == 'integer') && assetId != null) {
 
                 var stringVal = '';
-                var csvValues = variable.val.split(',');
+                var csvValues = [];
 
                 if(!variable.csv) {//if not csv
                   stringVal = variable.val;
                 }else{
                   //CSV CSV CSV CSV CSV CSV CSV CSV 
                   //TODO - maybe improve this so it's not splitting every time
+                  csvValues = variable.val.split(',');
                   stringVal = csvValues[index];
                 }
 
-                if(variable.val.indexOf('%') != -1 && fieldKeywords.length) {
-                  //find any occurrances of the data field names in the 
-                  //do keyword replacements
-                  var asset = _.where($scope.assets,{"id":assetId})[0];
-                  _.each(fieldKeywords,function(fieldId) {
-                    stringVal = stringVal.replace('%'+fieldId+'%',asset[fieldId]);
-                  });
-                  //replace index if it's in there
-                  stringVal = stringVal.replace('%index%',String(counter+1));
-                }//end check %
+                stringVal = $scope.keywordsReplace(stringVal,assetId,counter);
 
                 newFunction.args[variable.name] = stringVal;
-
 
               }else if(variable['type'] == 'select') {
                 newFunction.args[variable.name] = variable.val;
@@ -4306,6 +4550,7 @@ $scope.prepareActionBatchFunctions = function(assetIds,fieldKeywords) {
 
 $scope.csvChangeChangesChecked = false;
 
+$scope.csvChangeDivider = ',';
 $scope.csvChangeChkBatchFunctionsTest = true;
 $scope.csvChangeAssetsLoaded = false;
 $scope.csvChangeReload = false;
@@ -4313,6 +4558,7 @@ $scope.csvChangeReload = false;
 $scope.csvChangeAssets = [];
 $scope.csvChangeChanges = [];
 $scope.csvChangeIds = [];
+
 $scope.csvChangeTxtCsv = 'id,name,125\n1455,Employee 1,Test Note 1\n1459,Employee 2,\n1463,Employee 3,\n1467,Employee 4,\n1471,Employee 5,\n1475,Employee 6,Test Note 6\n1479,Person 7,\n1483,Person 8,\n1487,Employee 9,Test Note 9\n1491,Employee 10,';
 
 
@@ -4327,11 +4573,12 @@ $scope.csvChangeBtnCheckForChanges = function() {
   $scope.csvChangeChanges = [];
   $scope.csvChangeIds = [];
 
-  $scope.checkValidCsv($scope.csvChangeTxtCsv,
+  $scope.checkValidCsv($scope.csvChangeTxtCsv,$scope.csvChangeDivider,
     function(errors) {
       $scope.message('error-true','CSV invalid',errors);
     },function() {
-      $scope.csvChangeAssets = $scope.convertChangesCsvToAssetArray($scope.csvChangeTxtCsv);
+      $scope.csvChangeAssets = $scope.convertChangesCsvToAssetArray($scope.csvChangeTxtCsv,$scope.csvChangeDivider);
+
       //get ids and load data so we can compare
       var ids = [];
       _.each($scope.csvChangeAssets,function(csvAsset) {
@@ -4342,7 +4589,7 @@ $scope.csvChangeBtnCheckForChanges = function() {
       if($scope.csvChangeReload || !$scope.csvChangeAssetsLoaded) {
         //TODO check for new assets
 
-        $scope.getData({"assetIds":ids,callBack:function() {
+        $scope.getData({"assetIds":ids,"getMetadata":true,callBack:function() {
           //TO DO must check for erroneous assets see if assets in 
           //non existent ids eg
           //$scope.message('error-true',"Some assets couldn't be compared...",unloadedAssets);
@@ -4363,15 +4610,22 @@ $scope.csvChangeBtnCheckForChanges = function() {
 
 /***************  7.2.2 Step Two  ************/
 $scope.csvChangeBtnCheckForChangesStep2 = function() {
+
+    var counter = 0;
+
     //now we can compare
     _.each($scope.csvChangeAssets,function(csvAsset) {//go through each asset
+      
       var originalAsset = _.where($scope.assets,{id:Number(csvAsset.id)})[0];
+
       for(var key in csvAsset) {//go through each att
+        
         if(csvAsset.hasOwnProperty(key)) {
           var newChange = {
             "id":csvAsset.id,
             "field":key,
-            "to":csvAsset[key],
+            //"to":csvAsset[key],
+            "to":$scope.keywordsReplace(csvAsset[key],csvAsset.id,counter),
             "from":''
           };
 
@@ -4386,7 +4640,6 @@ $scope.csvChangeBtnCheckForChangesStep2 = function() {
             newChange.isMetadata = false;
             
             if(originalAsset.hasOwnProperty(key)) newChange.from = originalAsset[key];
-
           }
 
           if(String(newChange.from) != String(newChange.to)) {
@@ -4395,6 +4648,8 @@ $scope.csvChangeBtnCheckForChangesStep2 = function() {
           }
         }
       }
+
+      counter++;
     });
 
     $scope.csvChangeChangesChecked = true;
@@ -4405,9 +4660,9 @@ $scope.csvChangeBtnCheckForChangesStep2 = function() {
 /**************************  7.3 Convert Csv To Array of assets  ***********************/
 /*****************************************************************************/
 
-$scope.convertChangesCsvToAssetArray = function(csv) {
+$scope.convertChangesCsvToAssetArray = function(csv,divider) {
   var assetsArray = [];
-  var csvArray = $scope.convertCsvToArray(csv);
+  var csvArray = $scope.convertCsvToArray(csv,divider);
   var assetRows = csvArray.splice(1,csvArray.length-1);//will leave csvArray with the first row and assetRows with the rest
   var fields = csvArray[0]; //the one item left in csvArray is the fields array
 
@@ -4450,22 +4705,8 @@ $scope.csvChangeBtnExecuteChanges = function() {
 
 $scope.csvChangeMakeBatchFunctions = function() {
 
-  var arrayOfArraysFunctions = $scope.divideArray($scope.csvChangeChanges);
-  var arrayOfArraysBatches = [];
-
-  _.each(arrayOfArraysFunctions,function(functionsArray) {
-    arrayOfArraysBatches.push($scope.csvChangeMakeBatchFunctionsChunk(functionsArray));
-  })
-
-  return arrayOfArraysBatches;
-}
-
-
-
-$scope.csvChangeMakeBatchFunctionsChunk = function(changes) {
-
   var csvBatchFunctions = {};
-  _.each(changes,function(change,$index) {
+  _.each($scope.csvChangeChanges,function(change,$index) {
     var newFunction = {
       "args":{
         "asset_id":change.id
@@ -4489,23 +4730,6 @@ $scope.csvChangeMakeBatchFunctionsChunk = function(changes) {
   return csvBatchFunctions;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4578,7 +4802,7 @@ $scope.createAssets = function() {
 $scope.makeCreateAssetsBatchFunctions = function() {
     //builds the batch functions object depending on what you pass in
     
-    var batchFunctionsArray = [];
+    var batchFunctions = {};
 
     if($scope.createType == 'CSV') {
       var names = $scope.createNameCSV.split(',');     
@@ -4592,55 +4816,49 @@ $scope.makeCreateAssetsBatchFunctions = function() {
       };
     }
 
+
+
     if(names.length) {
 
       if($scope.createFunctionsReversed){
         names.reverse();
       }
 
-      var namesArrayOfArrays = $scope.divideArray(names);
 
-      _.each(namesArrayOfArrays,function(array) {
-        batchFunctionsArray.push($scope.makeCreateAssetsBatchFunctionsChunk(array));
-      })
+      for(var n = 0;n < names.length;n++) {
+        var newFunction = {
+          "function":'createAsset',
+          "args":{
+            "parent_id":$scope.parentAssetId,
+            "type_code":$scope.createTypeCodeSelected.id,
+            "asset_name":names[n]
+          },
+          "blocking":0
+        };
+
+        //if the extra att field is populated then add it to the args
+        if($scope.createAddField){
+          if($scope.createExtraAttField && $scope.createExtraAttValue){
+            newFunction.args.extra_attributes = 1;
+            newFunction.args[$scope.createExtraAttField] = $scope.createExtraAttValue;
+          }else{
+            $scope.message('error-true','Required',"Please set the extra attribute");
+          }
+        }
+
+        batchFunctions[String(n)] = newFunction;
+      };
+
+
 
     }else{
       $scope.message('error-true','No assets created',"Sorry the CSV didn't have any valid names. \n\nPlease make sure you separate them with commas\n\nE.g. 'Development types,Related links,Development categories,Exempt development,Complying development'");
     }// end if names.length
 
-    return batchFunctionsArray;
+    return batchFunctions;
 }
 
 
-$scope.makeCreateAssetsBatchFunctionsChunk = function(names) {
-  var batchFunctions = {};
-
-  for(var n = 0;n < names.length;n++) {
-    var newFunction = {
-      "function":'createAsset',
-      "args":{
-        "parent_id":$scope.parentAssetId,
-        "type_code":$scope.createTypeCodeSelected.id,
-        "asset_name":names[n]
-      },
-      "blocking":0
-    };
-
-    //if the extra att field is populated then add it to the args
-    if($scope.createAddField){
-      if($scope.createExtraAttField && $scope.createExtraAttValue){
-        newFunction.args.extra_attributes = 1;
-        newFunction.args[$scope.createExtraAttField] = $scope.createExtraAttValue;
-      }else{
-        $scope.message('error-true','Required',"Please set the extra attribute");
-      }
-    }
-
-    batchFunctions[String(n)] = newFunction;
-  };
-
-  return batchFunctions;
-}
 
 
 
@@ -4661,6 +4879,8 @@ $scope.structureCreateTxtRoot = '4044';
 $scope.structureCreateReady = false;
 $scope.structureCreateErrorText = '';
 $scope.structureCreateCounts = {};
+$scope.structureCreateDivider = ',';
+
 
 $scope.structureCreateTxtCsv = 'Home(page_standard)\nAbout Us(page_standard)\nContact(page_standard)\nContact(page_standard),Where We Are(page_standard)\nContact(page_standard),Opening Hours(page_standard),Sydney(page_standard)\nDocuments(folder),Important(folder),Document 1(page_standard)\nDocuments(folder),Not so important(folder),Document 2(page_standard)\nContact(page_standard),Opening Hours(page_standard),Melbourne(page_standard)\nAbout Us(page_standard),Location(page_standard)\nNames(page_standard),George(page_standard)';
 
@@ -4716,7 +4936,7 @@ $scope.convertStructureCsv = function(csv,successCallback,errorCallback) {
 };
 
 $scope.convertStructureCsvLoadRow = function(rowString,rowIndex) {
-  var pages = rowString.split(','); //Contact,Opening Hours,Sydney
+  var pages = rowString.split($scope.structureCreateDivider); //Contact,Opening Hours,Sydney
   var checkPointer = $scope.structureCreateObject;
   var currentParentName = null;
 
@@ -4726,7 +4946,6 @@ $scope.convertStructureCsvLoadRow = function(rowString,rowIndex) {
     if(!$scope.structureCreateArray[$index]) {//if there's no array for this level then make it
       $scope.structureCreateArray[$index] = [];
     }
-
 
     var y = pageStr.indexOf('(');
     var z = pageStr.indexOf(')');
@@ -4740,11 +4959,10 @@ $scope.convertStructureCsvLoadRow = function(rowString,rowIndex) {
       type = pageStr.substr(y+1,z-y-1);
       currentName = pageStr.substr(0,y);
 
-      if(_.where($scope.loadAssetsTypeCodes,{id:type}).length == 0) {//CHECK valid asset type
-        $scope.structureCreateErrorText += 'Row ' + String(rowIndex+1) + ', item ' + String($index+1) + ' - "' + type +  '" is an invalid asset type\n';
-      }else{
-
-        if(_.where($scope.structureCreateArray[$index],{name:currentName}).length == 0) {//if no item on level four with name "Documents" then make it
+        $duplicateName = _.where($scope.structureCreateArray[$index],{name:currentName});
+        //or if parent has different name and this is a duplicate
+        if($duplicateName.length == 0 || //if there are no duplicates
+          ($duplicateName.length > 0 && ($duplicateName.parentName != currentParentName))) {//if the parents are different and there are duplicates, then its ok
           var newAsset = {
             name:currentName,
             type:type
@@ -4754,8 +4972,10 @@ $scope.convertStructureCsvLoadRow = function(rowString,rowIndex) {
             var parentAsset = _.where($scope.structureCreateArray[$index-1],{name:currentParentName})[0];
             var parentPosition = $scope.structureCreateArray[$index-1].indexOf(parentAsset);
             newAsset.parent = parentPosition;
+            newAsset.parentName = currentParentName;
           }else{
             newAsset.parent = null;
+            newAsset.parentName = currentParentName;
           }
 
           $scope.structureCreateArray[$index].push(newAsset);  
@@ -5162,21 +5382,6 @@ $scope.errorCheckResults = function(results,successCallback,warningCallback,erro
   successCallback(results, results.length);
   return null;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
